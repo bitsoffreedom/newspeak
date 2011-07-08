@@ -1,6 +1,6 @@
 #!/usr/bin/python2.6
 """This script will parse RSS feeds from the Dutch government in an attempt to
-find publications relevant to the field of digitial civil rights and privacy.
+find publications relevant to the field of digital civil rights and privacy.
 Some of the feeds will be included completely, others will be filtered using a
 list of keywords."""
 
@@ -106,20 +106,18 @@ def does_match_keyword(item):
 
 def is_existing_item(link):
     """See if URI of item is already known in the database."""
-    CURSOR.execute('''SELECT id FROM items WHERE link = %s;''', link)
-    if CURSOR.rowcount > 0:
-        return True
-    return False
+    CURSOR.execute('''SELECT id FROM items WHERE link = %s''', link)
+    return CURSOR.rowcount > 0
 
 def insert_item_into_db(link, feed_id, title, description, updated_parsed):
     """Add a new item to the database."""
     CURSOR.execute('''INSERT INTO items (link, feed_id, title, 
             description, time_published) VALUES (%s, %s, %s, %s, 
-            %s);''', (link, feed_id, convert_unicode_to_html(title), 
+            %s)''', (link, feed_id, convert_unicode_to_html(title), 
                 convert_unicode_to_html(description), 
                 datetime.fromtimestamp(mktime(updated_parsed))))
 
-CURSOR.execute('''SELECT id, uri, type FROM feeds WHERE active = '1';''')
+CURSOR.execute('''SELECT id, uri, type FROM feeds WHERE active = '1' ''')
 FEEDS = CURSOR.fetchall()
 
 for feed in FEEDS:
@@ -141,7 +139,7 @@ CURSOR.execute('''SELECT items.link, items.title, items.description,
         WHERE items.feed_id = feeds.id
         AND feeds.active = '1'
         ORDER BY items.time_published DESC
-        LIMIT 50;''')
+        LIMIT 50''')
 PUBLISHED_ITEMS = CURSOR.fetchall()
 
 FEED_ITEMS = [
