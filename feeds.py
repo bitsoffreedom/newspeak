@@ -155,9 +155,9 @@ PUBLISHED_ITEMS = CURSOR.fetchall()
 
 FEED_ITEMS = [
     PyRSS2Gen.RSSItem(
-            title = published_item[2],
+            title = published_item[1],
             link = published_item[0],
-            description = """%s (%s)""" % (published_item[1],
+            description = """%s (%s)""" % (published_item[2],
                 published_item[4]),
             guid = published_item[0],
             pubDate = published_item[3]
