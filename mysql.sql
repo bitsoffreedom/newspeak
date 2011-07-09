@@ -9,7 +9,7 @@ DROP TABLE IF EXISTS `feeds`;
 CREATE TABLE IF NOT EXISTS `feeds` (
   `id` int(6) NOT NULL auto_increment,
   `uri` varchar(255) character set latin1 NOT NULL,
-  `type` enum('1','2','3') character set latin1 NOT NULL,
+  `filter` enum('1','2','3') character set latin1 NOT NULL,
   `description` varchar(1000) character set latin1 NOT NULL,
   `active` enum('0','1') character set latin1 NOT NULL default '1',
   PRIMARY KEY  (`id`),

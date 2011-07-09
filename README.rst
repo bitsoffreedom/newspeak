@@ -13,7 +13,7 @@ This script only needs one MySQL database with two tables. It's structure is
 included in the mysql.sql file. The scripts configuration file is included in
 feeds.example.cfg, which must be renamed to feeds.cfg. To start monitoring feeds
 one adds the row to the feeds table in the database. Of course, one needs to
-know the address of the RSS feed to monitor. The column type denotes whether the
+know the address of the RSS feed to monitor. The column filter denotes whether the
 articles from the feed must be filtered ("2") or not ("1"). The description
 field is self-explantory, just like the active field. 
 

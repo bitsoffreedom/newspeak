@@ -117,7 +117,7 @@ def insert_item_into_db(link, feed_id, title, description, updated_parsed):
                 convert_unicode_to_html(description), 
                 datetime.fromtimestamp(mktime(updated_parsed))))
 
-CURSOR.execute('''SELECT id, uri, type FROM feeds WHERE active = '1' ''')
+CURSOR.execute('''SELECT id, uri, filter FROM feeds WHERE active = '1' ''')
 FEEDS = CURSOR.fetchall()
 
 for feed in FEEDS:
