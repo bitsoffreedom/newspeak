@@ -109,15 +109,25 @@ def is_existing_item(link):
     CURSOR.execute('''SELECT id FROM items WHERE link = %s''', link)
     return CURSOR.rowcount > 0
 
-def insert_item_into_db(link, feed_id, title, description, updated_parsed):
+def insert_item_into_db(link, feed_id, title, description, updated_parsed,
+        feed_format):
     """Add a new item to the database."""
-    CURSOR.execute('''INSERT INTO items (link, feed_id, title, 
-            description, time_published) VALUES (%s, %s, %s, %s, 
-            %s)''', (link, feed_id, convert_unicode_to_html(title), 
-                convert_unicode_to_html(description), 
-                datetime.fromtimestamp(mktime(updated_parsed))))
+    if feed_format == '0':
+        CURSOR.execute('''INSERT INTO items (link, feed_id, title,
+                description, time_published) VALUES (%s, %s, %s, %s,
+                %s)''', (link, feed_id,
+                    convert_unicode_to_html(description)[0:1000],
+                    convert_unicode_to_html(title)[0:1000],
+                    datetime.fromtimestamp(mktime(updated_parsed))))
+    if feed_format == '1':
+        CURSOR.execute('''INSERT INTO items (link, feed_id, title,
+                description, time_published) VALUES (%s, %s, %s, %s,
+                %s)''', (link, feed_id, convert_unicode_to_html(title)[0:1000],
+                    convert_unicode_to_html(description)[0:1000],
+                    datetime.fromtimestamp(mktime(updated_parsed))))
 
-CURSOR.execute('''SELECT id, uri, filter FROM feeds WHERE active = '1' ''')
+CURSOR.execute('''SELECT id, uri, filter, format FROM feeds
+        WHERE active = '1' ''')
 FEEDS = CURSOR.fetchall()
 
 for feed in FEEDS:
@@ -126,16 +136,17 @@ for feed in FEEDS:
         for item in f.entries:
             if is_existing_item(item['link']) is not True:
                 insert_item_into_db(item['link'], feed[0], item['title'],
-                        item['description'], item['updated_parsed'])
+                        item['description'], item['updated_parsed'], feed[3])
     elif feed[2] == '2':
         for item in f.entries:
             if does_match_keyword(item) is True:
                 if is_existing_item(item['link']) is not True:
                     insert_item_into_db(item['link'], feed[0], item['title'],
-                            item['description'], item['updated_parsed'])
+                            item['description'], item['updated_parsed'],
+                            feed[3])
 
 CURSOR.execute('''SELECT items.link, items.title, items.description,
-        items.time_published, feeds.description FROM items, feeds
+        items.time_published, feeds.description, feeds.format FROM items, feeds
         WHERE items.feed_id = feeds.id
         AND feeds.active = '1'
         ORDER BY items.time_published DESC

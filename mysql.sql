@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS `feeds` (
   `id` int(6) NOT NULL auto_increment,
   `uri` varchar(255) character set latin1 NOT NULL,
   `filter` enum('1','2','3') character set latin1 NOT NULL,
+  `format` enum('0','1') collate utf8_unicode_ci NOT NULL default '0',
   `description` varchar(1000) character set latin1 NOT NULL,
   `active` enum('0','1') character set latin1 NOT NULL default '1',
   PRIMARY KEY  (`id`),
