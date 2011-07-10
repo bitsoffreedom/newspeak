@@ -166,14 +166,10 @@ FEED_ITEMS = [
     ]
 
 PUBLISHED_FEED = PyRSS2Gen.RSS2(
-    title = "Offici&#235;le bekendmakingen privacy en digitale burgerrechten",
-    link = "https://rejo.zenger.nl/inzicht/bekendmakingen.rss",
-    description = "De Offici&#235;le Bekendmakingen RSS Feed is een overzicht "
-    "van de meeste recente publicaties van de overheid op het gebied van "
-    "privacy en digitale burgerrechten. De lijst wordt samengesteld uit alle "
-    "parlementaire documenten, aangevuld met de publicaties en persberichten "
-    "van een aantal ministeries.",
-    managingEditor = "rejo@zenger.nl",
+    title = CONFIG.get('rss', 'title'),
+    link = CONFIG.get('rss', 'link'),
+    description = CONFIG.get('rss', 'description'),
+    managingEditor = CONFIG.get('rss', 'editor'),
     lastBuildDate = datetime.utcnow(),
     items = FEED_ITEMS
     )
