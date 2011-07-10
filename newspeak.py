@@ -14,7 +14,7 @@ import PyRSS2Gen
 import sys
 
 CONFIG = SafeConfigParser()
-CONFIG.read('feeds.cfg')
+CONFIG.read('newspeak.cfg')
 
 # Not including "buma" because it matches the name of a senator.
 #
