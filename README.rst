@@ -15,7 +15,7 @@ feeds.example.cfg, which must be renamed to feeds.cfg. To start monitoring feeds
 one adds the row to the feeds table in the database. Of course, one needs to
 know the address of the RSS feed to monitor. The column filter denotes whether
 the articles from the feed must be filtered ("2") or not ("1"). The description
-field is self-explantory, just like the active field. The format column changes
+field is self-explanatory, just like the active field. The format column changes
 the order of the output fields (as sometimes we prefer to have the description
 field from the input to be the title field on the output). 
 
