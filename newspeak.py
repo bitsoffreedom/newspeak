@@ -27,7 +27,9 @@ CONFIG.read('newspeak.cfg')
 # the words match only partial (e.g. "biometri" matching both
 # "biometrie" as well as "biometrisch").
 
-KEYWORDS = [' acta',
+KEYWORDS = [
+    ' 2004/48/EG',
+    ' acta',
     ' aftap',
     ' aivd',
     ' anoniem',
@@ -54,6 +56,7 @@ KEYWORDS = [' acta',
     ' fileshar',
     ' filter',
     ' google',
+    ' identiteitsfraude',
     ' intellectu',
     ' internet',
     ' interoperabiliteit',
