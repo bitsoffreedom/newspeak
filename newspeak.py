@@ -80,6 +80,7 @@ KEYWORDS = [
     ' skimmen',
     ' software',
     ' spysoftware',
+    ' supercookies',
     ' swift',
     ' telecom',
     ' thuiskopie',
