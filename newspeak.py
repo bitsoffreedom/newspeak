@@ -28,7 +28,11 @@ CONFIG.read('newspeak.cfg')
 # "biometrie" as well as "biometrisch").
 
 KEYWORDS = [
+    ' 2002/20/EG',
+    ' 2002/21/EG',
+    ' 2002/58/EG',
     ' 2004/48/EG',
+    ' 2006/24/EG',
     ' acta',
     ' aftap',
     ' aivd',
@@ -64,6 +68,7 @@ KEYWORDS = [
     ' interoperabiliteit',
     ' ip adres',
     ' ip-adres',
+    ' kansspel',
     ' kinderporno',
     ' mensenrechten',
     ' mivd',
@@ -74,7 +79,6 @@ KEYWORDS = [
     ' patent',
     ' persoonsgegevens',
     ' piracy',
-    ' piraterij',
     ' privacy',
     ' provider',
     ' retentie',
