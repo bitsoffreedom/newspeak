@@ -1,3 +1,8 @@
+# Project specific files
+newspeak.cfg
+keywords.txt
+
+# Non-project specific files
 *.py[co]
 
 # Packages
