@@ -16,84 +16,12 @@ import sys
 CONFIG = SafeConfigParser()
 CONFIG.read('newspeak.cfg')
 
-# Not including "buma" because it matches the name of a senator.
-#
-# Removed, because matching too much.
-#      '/ digita/i',
-#
-# There's a space prepending the string, to make sure the match
-# won't be made in the middle of a word (e.g. "anpr" matching
-# "methaanproductie"). There's no space at the end, as sometimes
-# the words match only partial (e.g. "biometri" matching both
-# "biometrie" as well as "biometrisch").
-
-KEYWORDS = [
-    ' 2002/20/EG',
-    ' 2002/21/EG',
-    ' 2002/58/EG',
-    ' 2004/48/EG',
-    ' 2006/24/EG',
-    ' acta',
-    ' aftap',
-    ' aivd',
-    ' anoniem',
-    ' anonimiteit',
-    ' anpr',
-    ' auteursrecht',
-    ' bewaarplicht',
-    ' biometri',
-    ' bits of freedom',
-    ' bodyscanners',
-    ' cameratoezicht',
-    ' centraal informatiepunt onderzoek telecommunicatie',
-    ' ciot',
-    ' cloud computing',
-    ' cookies',
-    ' ctivd',
-    ' communicatietechnologie',
-    ' computer',
-    ' copyright',
-    ' cyber',
-    ' data',
-    ' digid',
-    ' embed',
-    ' fileshar',
-    ' filter',
-    ' fox-it',
-    ' google',
-    ' high tech crime',
-    ' identiteitsfraude',
-    ' intellectu',
-    ' internet',
-    ' interoperabiliteit',
-    ' ip adres',
-    ' ip-adres',
-    ' kansspel',
-    ' kinderporno',
-    ' mensenrechten',
-    ' mivd',
-    ' netneutraliteit',
-    ' ncss',
-    ' octrooi',
-    ' ov.chipkaart',
-    ' patent',
-    ' persoonsgegevens',
-    ' piracy',
-    ' privacy',
-    ' provider',
-    ' retentie',
-    ' retention',
-    ' skimmen',
-    ' software',
-    ' spysoftware',
-    ' supercookies',
-    ' swift',
-    ' telecom',
-    ' thuiskopie',
-    ' trojan',
-    ' vingerafdruk',
-    ' voip',
-    ' wob']
+KEYWORDS = []
+with open('keywords.txt', 'r') as f:
+    for line in f:
+        line = line.partition('#')[0]
+        if line != '':
+            KEYWORDS.append(line.rstrip())
 
 try:
     CONN = MySQLdb.connect(host = CONFIG.get('database', 'hostname'),
