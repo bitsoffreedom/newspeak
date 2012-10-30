@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<rss version="2.0">
+<channel>
+  <title>$title</title>
+  <link>$uri_lst</title>
+  <description>$description</description>
+  <pubDate>$timestamp</pubDate>
+  <generator>$version</generator>
+  <managingEditor>$editor_addr</managingEditor>
+  <webMaster>$editor_addr</webMaster>
+  #for $article in $articles
+    <item>
+      <title>$article[1]</title>
+      <link>$article[0]</link>
+      <description>$article[2] ($article[4])</description>
+      <guid>$article[0]</guid>          
+      <pubDate>$article[3]</pubDate>
+      <source>$article[0]</source>
+    </item>
+  #end for
+ </channel>
+</rss>

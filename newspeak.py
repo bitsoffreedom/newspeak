@@ -7,10 +7,10 @@ list of keywords."""
 from datetime import datetime
 from time import mktime
 from ConfigParser import SafeConfigParser
+from Cheetah.Template import Template
 import cgi
 import feedparser
 import MySQLdb
-import PyRSS2Gen
 import sys
 
 CONFIG = SafeConfigParser()
@@ -70,8 +70,8 @@ def insert_item_into_db(link, feed_id, title, description, updated_parsed,
                     convert_unicode_to_html(description)[0:1000],
                     datetime.fromtimestamp(mktime(updated_parsed))))
 
-CURSOR.execute('''SELECT id, uri, filter, format FROM feeds
-        WHERE active = '1' ''')
+CURSOR.execute('''SELECT id, uri, filter, format, description FROM feeds
+        WHERE active = '1' ORDER BY 'description' ''')
 FEEDS = CURSOR.fetchall()
 
 for feed in FEEDS:
@@ -90,36 +90,35 @@ for feed in FEEDS:
                             feed[3])
 
 CURSOR.execute('''SELECT items.link, items.title, items.description,
-        items.time_published, feeds.description, feeds.format FROM items, feeds
-        WHERE items.feed_id = feeds.id
-        AND feeds.active = '1'
-        ORDER BY items.time_published DESC
-        LIMIT 50''')
-PUBLISHED_ITEMS = CURSOR.fetchall()
+                items.time_published, feeds.description, feeds.format FROM
+                items, feeds WHERE items.feed_id = feeds.id AND 
+                feeds.active = '1' ORDER BY items.time_published DESC 
+                LIMIT 50''')
+ITEMS = CURSOR.fetchall()
 
-FEED_ITEMS = [
-    PyRSS2Gen.RSSItem(
-            title = published_item[1],
-            link = published_item[0],
-            description = """%s (%s)""" % (published_item[2],
-                published_item[4]),
-            guid = published_item[0],
-            pubDate = published_item[3]
-            )
-        for published_item in PUBLISHED_ITEMS
-    ]
+TMPL_VARS = { "title":CONFIG.get('output', 'title'),
+    "description":CONFIG.get('output', 'description'),
+    "uri_rss":CONFIG.get('output', 'uri_rss'),
+    "uri_lst":CONFIG.get('output', 'uri_lst'),
+    "editor_addr":CONFIG.get('output', 'editor_addr'),
+    "editor_name":CONFIG.get('output', 'editor_name'),
+    "timestamp":datetime.utcnow(),
+    "num_feeds":len(FEEDS),
+    "feeds":FEEDS,
+    "articles":ITEMS,
+    "keywords":KEYWORDS,
+    "version":"Newspeak 0.0"
+    }
 
-PUBLISHED_FEED = PyRSS2Gen.RSS2(
-    title = CONFIG.get('rss', 'title'),
-    link = CONFIG.get('rss', 'link'),
-    description = CONFIG.get('rss', 'description'),
-    managingEditor = CONFIG.get('rss', 'editor'),
-    lastBuildDate = datetime.utcnow(),
-    items = FEED_ITEMS
-    )
+RSS_CONTENT = Template(file="templates/rss.tmpl", searchList=[TMPL_VARS])
+RSS = open(CONFIG.get('output', 'file_rss'), 'w')
+RSS.write(str(RSS_CONTENT))
+RSS.close()
 
-PUBLISHED_FEED.write_xml(open(CONFIG.get('files', 'rss'), "w"))
-
+LST_CONTENT = Template(file="templates/lst.tmpl", searchList=[TMPL_VARS])
+LST = open(CONFIG.get('output', 'file_lst'), 'w')
+LST.write(str(LST_CONTENT))
+LST.close()
 
 CURSOR.close()
 CONN.close()
