@@ -114,8 +114,7 @@ TMPL_VARS = { "title":CONFIG.get('output', 'title'),
 FILES = os.listdir('templates/')
 for file in FILES:
     CONTENT = Template(file='templates/%s' % (file), searchList=[TMPL_VARS])
-    OUTPUT = open('%s/%s' % (CONFIG.get('output', 'directory'),
-        os.path.splitext(file)[-2]), 'w')
+    OUTPUT = open('%s/%s' % (CONFIG.get('output', 'directory'), file), 'w')
     OUTPUT.write(str(CONTENT))
     OUTPUT.close()
 
