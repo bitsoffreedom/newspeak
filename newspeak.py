@@ -11,6 +11,7 @@ from Cheetah.Template import Template
 import cgi
 import feedparser
 import MySQLdb
+import os
 import sys
 
 CONFIG = SafeConfigParser()
@@ -110,15 +111,13 @@ TMPL_VARS = { "title":CONFIG.get('output', 'title'),
     "version":"Newspeak 0.0"
     }
 
-RSS_CONTENT = Template(file="templates/rss.tmpl", searchList=[TMPL_VARS])
-RSS = open(CONFIG.get('output', 'file_rss'), 'w')
-RSS.write(str(RSS_CONTENT))
-RSS.close()
-
-LST_CONTENT = Template(file="templates/lst.tmpl", searchList=[TMPL_VARS])
-LST = open(CONFIG.get('output', 'file_lst'), 'w')
-LST.write(str(LST_CONTENT))
-LST.close()
+FILES = os.listdir('templates/')
+for file in FILES:
+    CONTENT = Template(file='templates/%s' % (file), searchList=[TMPL_VARS])
+    OUTPUT = open('%s/%s' % (CONFIG.get('output', 'directory'),
+        os.path.splitext(file)[-2]), 'w')
+    OUTPUT.write(str(CONTENT))
+    OUTPUT.close()
 
 CURSOR.close()
 CONN.close()
