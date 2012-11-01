@@ -13,8 +13,7 @@ But, with other RSS feeds as input or with other keywords to match, you could pr
 Configuration
 -------------
 
-* This script only needs a MySQL database with two tables. The structure for these tables is included in the mysql.sql file. The scripts' configuration file is included in
-newspeak.example.cfg, which must be renamed to newspeak.cfg. All fields should be self-explanatory, but are commented as well.
+* This script only needs a MySQL database with two tables. The structure for these tables is included in the mysql.sql file. The scripts' configuration file is included in newspeak.example.cfg, which must be renamed to newspeak.cfg. All fields should be self-explanatory, but are commented as well.
 
 * To start monitoring feeds one adds the row to the feeds table in the database. The column filter denotes whether the articles from the feed must be filtered ("2") or not ("1"). The description field is self-explanatory, just like the active field. The format column changes the order of the output fields (as sometimes we prefer to have the description field from the input to be the title field on the output). If format is set "0" the description field of the item in the source RSS feed will be used as the title field in the item in the composite RSS feed - and the other way around. If format is set to "1", the fields aren't swapped.
 
