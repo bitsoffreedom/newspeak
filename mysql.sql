@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS `feeds` (
   `active` enum('0','1') character set latin1 NOT NULL default '1',
   PRIMARY KEY  (`id`),
   UNIQUE KEY `uri` (`uri`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=92 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 DROP TABLE IF EXISTS `items`;
 CREATE TABLE IF NOT EXISTS `items` (
