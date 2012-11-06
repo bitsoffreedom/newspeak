@@ -6,6 +6,7 @@ list of keywords."""
 
 from datetime import datetime
 from time import mktime
+from email import Utils
 from ConfigParser import SafeConfigParser
 from Cheetah.Template import Template
 import cgi
@@ -103,7 +104,7 @@ TMPL_VARS = { "title":CONFIG.get('output', 'title'),
     "uri_lst":CONFIG.get('output', 'uri_lst'),
     "editor_addr":CONFIG.get('output', 'editor_addr'),
     "editor_name":CONFIG.get('output', 'editor_name'),
-    "timestamp":datetime.utcnow(),
+    "timestamp":Utils.formatdate(localtime=True),
     "num_feeds":len(FEEDS),
     "feeds":FEEDS,
     "articles":ITEMS,
