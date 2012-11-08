@@ -9,6 +9,7 @@ from time import mktime
 from email import Utils
 from ConfigParser import SafeConfigParser
 from Cheetah.Template import Template
+from Cheetah.Filters import Filter
 import cgi
 import feedparser
 import MySQLdb
@@ -114,7 +115,7 @@ TMPL_VARS = { "title":CONFIG.get('output', 'title'),
 
 FILES = os.listdir('templates/')
 for file in FILES:
-    CONTENT = Template(file='templates/%s' % (file), searchList=[TMPL_VARS])
+    CONTENT = Template(file='templates/%s' % (file), searchList=[TMPL_VARS], filter=Filter)
     OUTPUT = open('%s/%s' % (CONFIG.get('output', 'directory'), file), 'w')
     OUTPUT.write(str(CONTENT))
     OUTPUT.close()
