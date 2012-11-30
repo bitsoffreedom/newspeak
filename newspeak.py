@@ -6,7 +6,7 @@ list of keywords."""
 
 from datetime import datetime
 from time import mktime
-from email import Utils
+from email import utils
 from ConfigParser import SafeConfigParser
 from Cheetah.Template import Template
 import cgi
@@ -79,16 +79,16 @@ FEEDS = CURSOR.fetchall()
 for feed in FEEDS:
     f = feedparser.parse('%s' % feed[1])
     if feed[2] == '1':
-        for item in f.entries:
-            if is_existing_item(item['link']) is not True:
-                insert_item_into_db(item['link'], feed[0], item['title'],
-                        item['description'], item['updated_parsed'], feed[3])
+        for entry in f.entries:
+            if is_existing_item(entry['link']) is not True:
+                insert_item_into_db(entry['link'], feed[0], entry['title'],
+                        entry['description'], entry['updated_parsed'], feed[3])
     elif feed[2] == '2':
-        for item in f.entries:
-            if does_match_keyword(item) is True:
-                if is_existing_item(item['link']) is not True:
-                    insert_item_into_db(item['link'], feed[0], item['title'],
-                            item['description'], item['updated_parsed'],
+        for entry in f.entries:
+            if does_match_keyword(entry) is True:
+                if is_existing_item(entry['link']) is not True:
+                    insert_item_into_db(entry['link'], feed[0], entry['title'],
+                            entry['description'], entry['updated_parsed'],
                             feed[3])
 
 CURSOR.execute('''SELECT items.link, items.title, items.description,
@@ -105,7 +105,7 @@ TMPL_VARS = { "title":CONFIG.get('output', 'title'),
     "uri_lst":CONFIG.get('output', 'uri_lst'),
     "editor_addr":CONFIG.get('output', 'editor_addr'),
     "editor_name":CONFIG.get('output', 'editor_name'),
-    "timestamp":Utils.formatdate(localtime=True),
+    "timestamp":utils.formatdate(localtime=True),
     "num_feeds":len(FEEDS),
     "feeds":FEEDS,
     "articles":ITEMS,
