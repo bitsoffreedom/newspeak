@@ -92,10 +92,11 @@ for feed in FEEDS:
                             feed[3])
 
 CURSOR.execute('''SELECT items.link, items.title, items.description,
-                items.time_published, feeds.description, feeds.format FROM
-                items, feeds WHERE items.feed_id = feeds.id AND 
-                feeds.active = '1' ORDER BY items.time_published DESC 
-                LIMIT 50''')
+                DATE_FORMAT(items.time_published,'%a, %d %b %Y %T CET'),
+                feeds.description, feeds.format
+                FROM items, feeds WHERE items.feed_id = feeds.id AND
+                feeds.active = '1' ORDER BY items.time_published
+                DESC LIMIT 50''')
 ITEMS = CURSOR.fetchall()
 
 TMPL_VARS = { "title":CONFIG.get('output', 'title'),
