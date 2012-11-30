@@ -93,7 +93,7 @@ for feed in FEEDS:
                             feed[3])
 
 CURSOR.execute('''SELECT items.link, items.title, items.description,
-                DATE_FORMAT(items.time_published,'%a, %d %b %Y %T CET'),
+                DATE_FORMAT(items.time_published,'%a, %d %b %Y %T +0200'),
                 feeds.description, feeds.format
                 FROM items, feeds WHERE items.feed_id = feeds.id AND
                 feeds.active = '1' ORDER BY items.time_published
