@@ -27,22 +27,26 @@ with open('keywords.txt', 'r') as f:
             KEYWORDS.append(line.rstrip())
 
 try:
-    CONN = MySQLdb.connect(host = CONFIG.get('database', 'hostname'),
-            user = CONFIG.get('database', 'username'),
-            passwd = CONFIG.get('database', 'password'),
-            db = CONFIG.get('database', 'database'),
-            charset = CONFIG.get('database', 'charset'))
+    CONN = MySQLdb.connect(
+            host=CONFIG.get('database', 'hostname'),
+            user=CONFIG.get('database', 'username'),
+            passwd=CONFIG.get('database', 'password'),
+            db=CONFIG.get('database', 'database'),
+            charset=CONFIG.get('database', 'charset')
+    )
 
 except MySQLdb.Error, e:
     print "Error %d: %s" % (e.args[0], e.args[1])
-    sys.exit (1)
+    sys.exit(1)
 
 CURSOR = CONN.cursor()
+
 
 def convert_unicode_to_html(string):
     """Converts unicode to HTML entities. For example '&' becomes '&amp;'."""
     string = cgi.escape(string).encode('ascii', 'xmlcharrefreplace')
     return string
+
 
 def does_match_keyword(item):
     """Return TRUE if the string contains any of the given keywords."""
@@ -51,10 +55,12 @@ def does_match_keyword(item):
             return True
     return False
 
+
 def is_existing_item(link):
     """See if URI of item is already known in the database."""
     CURSOR.execute('''SELECT id FROM items WHERE link = %s''', link)
     return CURSOR.rowcount > 0
+
 
 def insert_item_into_db(link, feed_id, title, description, updated_parsed,
         feed_format):
@@ -100,19 +106,20 @@ CURSOR.execute('''SELECT items.link, items.title, items.description,
                 DESC LIMIT 50''')
 ITEMS = CURSOR.fetchall()
 
-TMPL_VARS = { "title":CONFIG.get('output', 'title'),
-    "description":CONFIG.get('output', 'description'),
-    "uri_rss":CONFIG.get('output', 'uri_rss'),
-    "uri_lst":CONFIG.get('output', 'uri_lst'),
-    "editor_addr":CONFIG.get('output', 'editor_addr'),
-    "editor_name":CONFIG.get('output', 'editor_name'),
-    "timestamp":utils.formatdate(localtime=True),
-    "num_feeds":len(FEEDS),
-    "feeds":FEEDS,
-    "articles":ITEMS,
-    "keywords":KEYWORDS,
-    "version":"Newspeak 0.0"
-    }
+TMPL_VARS = {
+    "title": CONFIG.get('output', 'title'),
+    "description": CONFIG.get('output', 'description'),
+    "uri_rss": CONFIG.get('output', 'uri_rss'),
+    "uri_lst": CONFIG.get('output', 'uri_lst'),
+    "editor_addr": CONFIG.get('output', 'editor_addr'),
+    "editor_name": CONFIG.get('output', 'editor_name'),
+    "timestamp": utils.formatdate(localtime=True),
+    "num_feeds": len(FEEDS),
+    "feeds": FEEDS,
+    "articles": ITEMS,
+    "keywords": KEYWORDS,
+    "version": "Newspeak 0.0"
+}
 
 FILES = os.listdir('templates/')
 for file in FILES:
