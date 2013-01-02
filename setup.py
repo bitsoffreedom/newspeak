@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-import distribute_setup
-distribute_setup.use_setuptools()
-
 from setuptools import setup, find_packages
 
 try:
@@ -40,4 +37,9 @@ setup(
         'django-setuptest',
         'argparse',  # apparently needed by django-setuptest on python 2.6
     ),
+    entry_points={
+        'console_scripts': [
+            'newspeak = newspeak.runner:main',
+        ],
+    },
 )
