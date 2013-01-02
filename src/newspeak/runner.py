@@ -3,19 +3,24 @@ from logan.runner import run_app
 
 def generate_settings():
     """
-    This command is run when ``default_path`` doesn't exist, or ``init`` is
-    run and returns a string representing the default data to put into their
-    settings file.
+    Generate initial settings.
     """
-    return ""
+    import os
+
+    root_path = os.path.dirname(__file__)
+    config_path = 'conf/initial.py'
+
+    initial_settings = open(os.path.join(root_path, config_path))
+
+    return initial_settings.read()
 
 
 def main():
     run_app(
         project='newspeak',
-        default_config_path='~/.newspeak/',
+        default_config_path='~/.newspeak/newspeak.conf.py',
         default_settings='newspeak.conf.defaults',
-        settings_initializer='newspeak.logan_runner.generate_settings',
+        settings_initializer=generate_settings,
         settings_envvar='NEWSPEAK_CONF',
     )
 
