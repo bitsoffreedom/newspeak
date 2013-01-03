@@ -18,6 +18,7 @@ def update_entry(feed, entry):
     # Copy entry information
     db_entry.title = entry.title
     db_entry.link = entry.link
+    db_entry.summary = entry.summary
     db_entry.published = datetime_from_struct(entry.published_parsed)
     db_entry.updated = datetime_from_struct(entry.updated_parsed)
 
@@ -34,11 +35,18 @@ def update_feed(feed):
     # Assert the feed id is continuous
     # assert not feed.feed_id or parsed.id == feed.feed_id
 
-    # Convert feedparser's time_struct to datetime
-    parsed_updated = datetime_from_struct(parsed.feed.updated_parsed)
+    update = True
+    if hasattr(parsed.feed, 'updated_parsed'):
+        # Convert feedparser's time_struct to datetime
+        parsed_updated = datetime_from_struct(parsed.feed.updated_parsed)
+
+        if feed.updated and feed.updated >= parsed_updated:
+            update = False
+    else:
+        parsed_updated = None
 
     # Only update if newer
-    if not feed.updated or feed.updated < parsed_updated:
+    if update:
         # Update all entries
         for entry in parsed.entries:
             update_entry(feed, entry)

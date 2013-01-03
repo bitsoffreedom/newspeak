@@ -41,9 +41,9 @@ class Feed(models.Model):
     updated = models.DateTimeField(_('time updated'),
             editable=False, null=True)
 
-    description = models.TextField(_('description'))
+    description = models.TextField(_('description'), blank=True)
     active = models.BooleanField(_('active'), default=True, db_index=True)
-    filters = models.ManyToManyField(KeywordFilter, null=True)
+    filters = models.ManyToManyField(KeywordFilter, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         """ Make sure we fetch on first save action. """
@@ -61,9 +61,23 @@ class Feed(models.Model):
         if new:
             update_feed(self)
 
+    def __unicode__(self):
+        """
+        Unicode representation is title or URL if title has not been set.
+        """
+        if self.title:
+            return self.title
+
+        return self.url
+
 
 class FeedEntry(models.Model):
     """ Feed entries. """
+
+    class Meta:
+        verbose_name = _('entry')
+        verbose_name_plural = _('entries')
+        ordering = ('-published', )
 
     feed = models.ForeignKey(Feed, related_name='entries')
 
@@ -73,17 +87,17 @@ class FeedEntry(models.Model):
         unique=True, editable=False, max_length=255)
 
     published = models.DateTimeField(_('time published'), editable=False)
-    updated = models.DateTimeField(_('time updated'))
+    updated = models.DateTimeField(_('time updated'),
+        editable=False, null=True)
 
     summary = models.TextField(_('summary'))
 
+    def __unicode__(self):
+        """
+        Unicode representation is title or URL if title has not been set.
+        """
+        if self.title:
+            return self.title
 
-class FeedContent(models.Model):
-    """ Feed content objects. """
+        return self.link
 
-    entry = models.ForeignKey(FeedEntry)
-
-    type = models.CharField(_('type'), max_length=255)
-    base = models.CharField(_('base'), max_length=255)
-    language = models.CharField(_('language'), max_length=255)
-    value = models.TextField()
