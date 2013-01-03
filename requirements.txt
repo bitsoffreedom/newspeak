@@ -3,3 +3,5 @@ logan
 South
 gunicorn
 surlex
+feedparser
+pytz
