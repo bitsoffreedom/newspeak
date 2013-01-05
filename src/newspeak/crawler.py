@@ -59,6 +59,13 @@ def update_feed(feed):
     # Fetch and parse the feed
     parsed = feedparser.parse(feed.url)
 
+    # Check for well-formedness
+    if parsed.bozo:
+        logger.warning(
+            'Feed data was not well-formed. Error: %s',
+            unicode(parsed.bozo_exception)
+        )
+
     # Assert the feed id is continuous
     # assert not feed.feed_id or parsed.id == feed.feed_id
 
@@ -99,6 +106,8 @@ def update_feed(feed):
 
 def update_feeds():
     """ Update all feeds. """
+
+    logger.info('Updating all feeds')
 
     # List all active feeds
     feed_qs = Feed.objects.filter(active=True)
