@@ -46,33 +46,19 @@ def update_entry(feed, entry):
     else:
         raise Exception('Could not identify entry by link or ID.')
 
-    # Determine wheter to update
-    update = True
-    if hasattr(entry, 'updated_parsed'):
-        parsed_updated = datetime_from_struct(entry.updated_parsed)
+    # Copy entry information
+    db_entry.title = entry.title
+    db_entry.link = entry.link
+    db_entry.summary = entry.summary
 
-        if db_entry.updated and db_entry.updated >= parsed_updated:
-            # Entry is not updated since last parse
-            update = False
+    if hasattr(entry, 'author'):
+        db_entry.author = entry.author
 
-    if update:
-        logger.debug('Updating entry %s', db_entry)
+    db_entry.published = datetime_from_struct(entry.published_parsed)
+    db_entry.updated = datetime_from_struct(entry.updated_parsed)
 
-        # Copy entry information
-        db_entry.title = entry.title
-        db_entry.link = entry.link
-        db_entry.summary = entry.summary
-
-        if hasattr(entry, 'author'):
-            db_entry.author = entry.author
-
-        db_entry.published = datetime_from_struct(entry.published_parsed)
-        db_entry.updated = parsed_updated
-
-        # Save it to the database
-        db_entry.save()
-    else:
-        logger.debug('Not updating entry %s', db_entry)
+    # Save it to the database
+    db_entry.save()
 
 
 def update_feed(feed):
@@ -139,7 +125,22 @@ def update_feed(feed):
 
             # Update all entries
             for entry in parsed.entries:
-                update_entry(feed, entry)
+                # Only update posts which are changed after the latest feed
+                # update - this saves a lot of effort in the filtering
+                # process down the road
+
+                if hasattr(entry, 'updated_parsed'):
+                    entry_parsed_updated = \
+                        datetime_from_struct(entry.updated_parsed)
+
+                    if feed.updated and feed.updated >= entry_parsed_updated:
+                        entry_update = False
+
+                if entry_update:
+                    logger.debug('Updating %s', entry.title)
+                    update_entry(feed, entry)
+                else:
+                    logger.debug('Not updating %s', entry.title)
 
             # Make sure the feed ID is synchronized
             # feed.feed_id = parsed.id
