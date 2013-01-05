@@ -91,6 +91,8 @@ class FeedEntry(models.Model):
     feed = models.ForeignKey(Feed, related_name='entries')
 
     title = models.CharField(_('title'), max_length=1024)
+    author = models.CharField(_('author'), max_length=255, blank=True)
+
     link = models.URLField(_('link'), db_index=True, max_length=255)
     entry_id = models.CharField(_('remote entry id'), null=True,
         db_index=True, editable=False, max_length=255)
@@ -98,7 +100,7 @@ class FeedEntry(models.Model):
     published = models.DateTimeField(_('time published'))
     updated = models.DateTimeField(_('time updated'), null=True)
 
-    summary = models.TextField(_('summary'))
+    summary = models.TextField(_('summary'), blank=True)
 
     def __unicode__(self):
         """

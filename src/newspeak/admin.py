@@ -17,9 +17,9 @@ class FeedAdmin(admin.ModelAdmin):
 
 class FeedEntryAdmin(admin.ModelAdmin):
     date_hierarchy = 'published'
-    list_display = ('published', 'title', 'feed')
+    list_display = ('published', 'title', 'author', 'feed')
     list_filter = ('feed', )
-    search_fields = ('title', 'summary')
+    search_fields = ('title', 'author', 'summary')
 
     readonly_fields = (
         'entry_id',

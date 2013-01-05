@@ -62,6 +62,10 @@ def update_entry(feed, entry):
         db_entry.title = entry.title
         db_entry.link = entry.link
         db_entry.summary = entry.summary
+
+        if hasattr(entry, 'author'):
+            db_entry.author = entry.author
+
         db_entry.published = datetime_from_struct(entry.published_parsed)
         db_entry.updated = parsed_updated
 
