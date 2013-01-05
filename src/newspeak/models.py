@@ -45,6 +45,15 @@ class Feed(models.Model):
     active = models.BooleanField(_('active'), default=True, db_index=True)
     filters = models.ManyToManyField(KeywordFilter, null=True, blank=True)
 
+    # Preserve some error data
+    error_state = models.BooleanField(
+        _('error'), help_text=_('Latest crawl yielded error.'),
+        default=False, db_index=True)
+    error_description = models.TextField(_('error description'),
+        help_text=_('Description of latest crawl error.'), editable=False)
+    error_date = models.DateTimeField(_('error date'), null=True,
+        help_text=_('Latest time when an error was seen.'), editable=False)
+
     def save(self, *args, **kwargs):
         """ Make sure we fetch on first save action. """
         from .crawler import update_feed

@@ -3,6 +3,8 @@ logger = logging.getLogger(__name__)
 
 import feedparser
 
+from django.utils.timezone import now
+
 from .models import Feed, FeedEntry
 from .utils import datetime_from_struct
 
@@ -56,52 +58,62 @@ def update_entry(feed, entry):
 def update_feed(feed):
     """ Update a single feed. """
 
-    # Fetch and parse the feed
-    parsed = feedparser.parse(feed.url)
+    try:
+        # Fetch and parse the feed
+        parsed = feedparser.parse(feed.url)
 
-    # Check for well-formedness
-    if parsed.bozo:
-        logger.warning(
-            'Feed data was not well-formed. Error: %s',
-            unicode(parsed.bozo_exception)
-        )
+        # Check for well-formedness
+        if parsed.bozo:
+            logger.warning(
+                'Feed data was not well-formed. Error: %s',
+                unicode(parsed.bozo_exception)
+            )
 
-    # Assert the feed id is continuous
-    # assert not feed.feed_id or parsed.id == feed.feed_id
+        # Assert the feed id is continuous
+        # assert not feed.feed_id or parsed.id == feed.feed_id
 
-    update = True
-    if hasattr(parsed.feed, 'updated_parsed'):
-        # Convert feedparser's time_struct to datetime
-        parsed_updated = datetime_from_struct(parsed.feed.updated_parsed)
+        update = True
+        if hasattr(parsed.feed, 'updated_parsed'):
+            # Convert feedparser's time_struct to datetime
+            parsed_updated = datetime_from_struct(parsed.feed.updated_parsed)
 
-        if feed.updated and feed.updated >= parsed_updated:
-            update = False
-    else:
-        parsed_updated = None
+            if feed.updated and feed.updated >= parsed_updated:
+                update = False
+        else:
+            parsed_updated = None
 
-    # Only update if newer
-    if update:
-        logger.debug('Updating feed %s', feed)
+        # Only update if newer
+        if update:
+            logger.debug('Updating feed %s', feed)
 
-        # Update all entries
-        for entry in parsed.entries:
-            update_entry(feed, entry)
+            # Update all entries
+            for entry in parsed.entries:
+                update_entry(feed, entry)
 
-        # Make sure the feed ID and last update are synchronized
-        # feed.feed_id = parsed.id
-        feed.updated = parsed_updated
+            # Make sure the feed ID and last update are synchronized
+            # feed.feed_id = parsed.id
+            feed.updated = parsed_updated
 
-        # Set title and subtitle only if not already set
-        if not feed.title:
-            feed.title = parsed.feed.title
+            # Set title and subtitle only if not already set
+            if not feed.title:
+                feed.title = parsed.feed.title
 
-        if not feed.subtitle:
-            feed.subtitle = parsed.feed.subtitle
+            if not feed.subtitle:
+                feed.subtitle = parsed.feed.subtitle
 
+            feed.save()
+
+        else:
+            logger.debug('Not updating feed %s', feed)
+
+    except Exception as e:
+        # Log any exception and pass the status on to the database
+        feed.error_state = True
+        feed.error_description = unicode(e)
+        feed.error_date = now()
         feed.save()
 
-    else:
-        logger.debug('Not updating feed %s', feed)
+        logger.exception(e)
 
 
 def update_feeds():
