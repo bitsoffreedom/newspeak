@@ -23,3 +23,10 @@ class FetchTest(TestCase):
         feed.save()
 
 
+class BofFeedsTest(TestCase):
+    """ Test fetching all feeds in the Bits of Freedom fixture. """
+
+    fixtures = ['feeds_bof']
+
+    def test_fetch(self):
+        update_feeds()
