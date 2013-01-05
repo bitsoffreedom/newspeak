@@ -1,3 +1,6 @@
+# Project specific files
+output
+
 # Non-project specific files
 *.py[co]
 

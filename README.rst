@@ -24,4 +24,12 @@ Simply perform the following steps:
 
        newspeak run_gunicorn
 
-#. Open `http://127.0.0.1:8000/admin/` in your browser.
+#. Open `http://127.0.0.1:8000/admin/` in your browser, add some feed. Only
+   the URL is required, the description and title will be fetched
+   automatically, as well as the first set of entries.
+
+#. Make sure the following command gets executed to update the feeds::
+
+       newspeak update_feeds
+
+   (Optionally, add `-v <1|2|3>` to get more feedback on the process.)

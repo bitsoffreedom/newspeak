@@ -1,5 +1,7 @@
+import logging
+logger = logging.getLogger(__name__)
+
 import feedparser
-import datetime
 
 from .models import Feed, FeedEntry
 from .utils import datetime_from_struct
@@ -11,9 +13,34 @@ def update_entry(feed, entry):
     try:
         # Updating an existing object
         db_entry = feed.entries.get(feed=feed, entry_id=entry.id)
+
+        logger.debug('Updating existing entry %s', db_entry)
+
     except FeedEntry.DoesNotExist:
         # Creating a new object
         db_entry = FeedEntry(feed=feed, entry_id=entry.id)
+
+        logger.debug('Creating new entry %s', db_entry)
+
+    # Determine wheter to update
+    # update = True
+    # if hasattr(entry, 'updated_parsed'):
+    #     parsed_updated = datetime_from_struct(entry.updated_parsed)
+
+    #     if db_entry.updated and db_entry.updated >= parsed_updated:
+    #         # Entry is not updated since last parse
+    #         update = False
+
+    # if update:
+    #     # Copy entry information
+    #     db_entry.title = entry.title
+    #     db_entry.link = entry.link
+    #     db_entry.summary = entry.summary
+    #     db_entry.published = datetime_from_struct(entry.published_parsed)
+    #     db_entry.updated = parsed_updated
+
+    #     # Save it to the database
+    #     db_entry.save()
 
     # Copy entry information
     db_entry.title = entry.title
@@ -47,6 +74,8 @@ def update_feed(feed):
 
     # Only update if newer
     if update:
+        logger.debug('Updating feed %s', feed)
+
         # Update all entries
         for entry in parsed.entries:
             update_entry(feed, entry)
@@ -64,6 +93,10 @@ def update_feed(feed):
 
         feed.save()
 
+    else:
+        logger.debug('Not updating feed %s', feed)
+
+
 def update_feeds():
     """ Update all feeds. """
 
@@ -71,4 +104,5 @@ def update_feeds():
     feed_qs = Feed.objects.filter(active=True)
 
     for feed in feed_qs:
+        logger.info('Updating feed %s', feed)
         update_feed(feed)
