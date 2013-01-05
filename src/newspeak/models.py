@@ -35,8 +35,8 @@ class Feed(models.Model):
     link = models.URLField(_('link'), blank=True)
     url = models.URLField(_('URL'))
 
-    # feed_id = models.CharField(_('remote feed id'),
-    #     unique=True, editable=False, max_length=255)
+    feed_id = models.CharField(_('remote feed id'),
+        null=True, unique=True, editable=False, max_length=255)
 
     updated = models.DateTimeField(_('time updated'),
             editable=False, null=True)

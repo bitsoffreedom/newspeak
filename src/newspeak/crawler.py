@@ -109,9 +109,6 @@ def update_feed(feed):
             for entry in parsed.entries:
                 update_entry(feed, entry)
 
-            # Make sure the feed ID is synchronized
-            # feed.feed_id = parsed.id
-
             if parsed_updated:
                 # Get latest update from feed
                 feed.updated = parsed_updated
@@ -138,6 +135,10 @@ def update_feed(feed):
 
             if not feed.subtitle:
                 feed.subtitle = parsed.feed.subtitle
+
+            # Synchronize feed id
+            if hasattr(parsed, 'id'):
+                feed.feed_id = parsed.id
 
             # Clear any possible error state
             feed.error_state = False

@@ -11,7 +11,7 @@ class FeedAdmin(admin.ModelAdmin):
     list_filter = ('updated', 'active', 'error_state')
 
     readonly_fields = (
-        'updated', 'error_state', 'error_description', 'error_date'
+        'feed_id', 'updated', 'error_state', 'error_description', 'error_date'
     )
 
 
