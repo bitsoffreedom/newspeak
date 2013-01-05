@@ -6,6 +6,7 @@ import eventlet
 feedparser = eventlet.import_patched('feedparser')
 
 from django.utils.timezone import now
+from django.utils.translation import ugettext_lazy as _
 
 from .models import Feed, FeedEntry
 from .utils import datetime_from_struct
@@ -81,7 +82,36 @@ def update_feed(feed):
 
     try:
         # Fetch and parse the feed
-        parsed = feedparser.parse(feed.url)
+        # etag and modified parameters will trigger a conditional GET
+        parsed = feedparser.parse(feed.url,\
+            etag=feed.etag, modified=feed.modified)
+
+        # Data not changed
+        if parsed.status == 304:
+            logger.debug('Feed %s not changed, aborting', feed)
+
+            return feed
+
+        # Feed gone, disable crawling
+        if parsed.status == 410:
+            logger.error('Feed %s gone, disabling', feed)
+
+            feed.error_state = True
+            feed.error_description = _(
+                'Feed returns 410: Gone. Crawling deactivated.'
+            )
+            feed.active = False
+            feed.save()
+
+            return feed
+
+        # Permanent redirect, update URL
+        if parsed.status == 301:
+            logger.warning(
+                'Feed %s has permanent redirect, updating URL to %s',
+                feed, parsed.href)
+
+            feed.url = parsed.href
 
         # Check for well-formedness
         if parsed.bozo:
@@ -143,6 +173,10 @@ def update_feed(feed):
 
             # Clear any possible error state
             feed.error_state = False
+
+            # Store last modified and etag
+            feed.etag = getattr(parsed, 'etag', '')
+            feed.modified = getattr(parsed, 'modified', '')
 
             feed.save()
 

@@ -54,6 +54,12 @@ class Feed(models.Model):
     error_date = models.DateTimeField(_('error date'), null=True,
         help_text=_('Latest time when an error was seen.'), editable=False)
 
+    # HTTP dynamic get optimizations
+    modified = models.CharField(_('HTTP Last Modified header'),
+        max_length=255, editable=False)
+    etag = models.CharField(_('HTTP Etag'),
+        max_length=255, editable=False)
+
     def save(self, *args, **kwargs):
         """ Make sure we fetch on first save action. """
         from .crawler import update_feed
