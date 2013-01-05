@@ -91,9 +91,9 @@ class FeedEntry(models.Model):
     feed = models.ForeignKey(Feed, related_name='entries')
 
     title = models.CharField(_('title'), max_length=1024)
-    link = models.URLField(_('link'))
-    entry_id = models.CharField(_('remote entry id'),
-        unique=True, editable=False, max_length=255)
+    link = models.URLField(_('link'), db_index=True)
+    entry_id = models.CharField(_('remote entry id'), null=True,
+        db_index=True, editable=False, max_length=255)
 
     published = models.DateTimeField(_('time published'), editable=False)
     updated = models.DateTimeField(_('time updated'),

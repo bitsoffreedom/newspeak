@@ -9,20 +9,40 @@ from .models import Feed, FeedEntry
 from .utils import datetime_from_struct
 
 
-def update_entry(feed, entry):
-    """ Update a specified entry for the feed. """
+def get_or_create_entry(**kwargs):
+    """ Get or create feed entry with specified kwargs without saving. """
 
     try:
         # Updating an existing object
-        db_entry = feed.entries.get(feed=feed, entry_id=entry.id)
+        db_entry = FeedEntry.objects.get(**kwargs)
 
         logger.debug('Updating existing entry %s', db_entry)
 
     except FeedEntry.DoesNotExist:
         # Creating a new object
-        db_entry = FeedEntry(feed=feed, entry_id=entry.id)
+        db_entry = FeedEntry(**kwargs)
 
         logger.debug('Creating new entry %s', db_entry)
+
+    return db_entry
+
+
+def update_entry(feed, entry):
+    """ Update a specified entry for the feed. """
+
+    if hasattr(entry, 'id'):
+        logger.debug('Attempt matching by entry ID %s', entry.id)
+
+        db_entry = get_or_create_entry(feed=feed, entry_id=entry.id)
+
+    elif hasattr(entry, 'link'):
+        logger.debug('Attempt matching by entry link %s', entry.link)
+
+        db_entry = get_or_create_entry(feed=feed, entry_id=None, link=entry.link)
+
+    else:
+        raise Exception('Could not identify entry by link or ID.')
+
 
     # Determine wheter to update
     # update = True
@@ -100,6 +120,9 @@ def update_feed(feed):
 
             if not feed.subtitle:
                 feed.subtitle = parsed.feed.subtitle
+
+            # Clear any possible error state
+            feed.error_state = False
 
             feed.save()
 
