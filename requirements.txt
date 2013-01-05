@@ -5,3 +5,4 @@ gunicorn
 surlex
 feedparser
 pytz
+eventlet

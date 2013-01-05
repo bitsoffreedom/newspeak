@@ -1,6 +1,9 @@
 import logging
 logger = logging.getLogger(__name__)
 
+import eventlet
+from eventlet.green import urllib2
+
 import feedparser
 
 from django.utils.timezone import now
@@ -78,9 +81,12 @@ def update_entry(feed, entry):
 def update_feed(feed):
     """ Update a single feed. """
 
+    logger.info('Updating feed %s', feed)
+
     try:
         # Fetch and parse the feed
-        parsed = feedparser.parse(feed.url)
+        rawdata = urllib2.urlopen(feed.url).read()
+        parsed = feedparser.parse(rawdata)
 
         # Check for well-formedness
         if parsed.bozo:
@@ -138,15 +144,23 @@ def update_feed(feed):
 
         logger.exception(e)
 
+    finally:
+        return feed
+
 
 def update_feeds():
     """ Update all feeds. """
 
     logger.info('Updating all feeds')
 
-    # List all active feeds
-    feed_qs = Feed.objects.filter(active=True)
+    # List all active feeds, randomized ordering for greater concurrency
+    feed_qs = Feed.objects.filter(active=True).order_by('?')
 
-    for feed in feed_qs:
-        logger.info('Updating feed %s', feed)
-        update_feed(feed)
+    # Create a pool with 16 workers to swim in
+    pool = eventlet.GreenPool(size=16)
+
+    for feed in pool.imap(update_feed, feed_qs):
+        logger.debug('Finished processing feed %s', feed)
+
+    # Wait untill all threads are done
+    pool.waitall()
