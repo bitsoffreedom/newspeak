@@ -46,36 +46,29 @@ def update_entry(feed, entry):
     else:
         raise Exception('Could not identify entry by link or ID.')
 
-
     # Determine wheter to update
-    # update = True
-    # if hasattr(entry, 'updated_parsed'):
-    #     parsed_updated = datetime_from_struct(entry.updated_parsed)
+    update = True
+    if hasattr(entry, 'updated_parsed'):
+        parsed_updated = datetime_from_struct(entry.updated_parsed)
 
-    #     if db_entry.updated and db_entry.updated >= parsed_updated:
-    #         # Entry is not updated since last parse
-    #         update = False
+        if db_entry.updated and db_entry.updated >= parsed_updated:
+            # Entry is not updated since last parse
+            update = False
 
-    # if update:
-    #     # Copy entry information
-    #     db_entry.title = entry.title
-    #     db_entry.link = entry.link
-    #     db_entry.summary = entry.summary
-    #     db_entry.published = datetime_from_struct(entry.published_parsed)
-    #     db_entry.updated = parsed_updated
+    if update:
+        logger.debug('Updating entry %s', db_entry)
 
-    #     # Save it to the database
-    #     db_entry.save()
+        # Copy entry information
+        db_entry.title = entry.title
+        db_entry.link = entry.link
+        db_entry.summary = entry.summary
+        db_entry.published = datetime_from_struct(entry.published_parsed)
+        db_entry.updated = parsed_updated
 
-    # Copy entry information
-    db_entry.title = entry.title
-    db_entry.link = entry.link
-    db_entry.summary = entry.summary
-    db_entry.published = datetime_from_struct(entry.published_parsed)
-    db_entry.updated = datetime_from_struct(entry.updated_parsed)
-
-    # Save it to the database
-    db_entry.save()
+        # Save it to the database
+        db_entry.save()
+    else:
+        logger.debug('Not updating entry %s', db_entry)
 
 
 def update_feed(feed):
