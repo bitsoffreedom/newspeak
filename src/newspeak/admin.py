@@ -6,8 +6,13 @@ from .models import Feed, FeedEntry, KeywordFilter
 class FeedAdmin(admin.ModelAdmin):
     filter_horizontal = ('filters', )
     search_fields = ('title', 'subtitle', 'description')
-    list_display = ('title', 'url', 'active')
-    list_filter = ('active', )
+    list_display = ('title', 'url', 'updated', 'active', 'error_state')
+    list_display_links = ('title', 'url')
+    list_filter = ('updated', 'active', 'error_state')
+
+    readonly_fields = (
+        'updated', 'error_state', 'error_description', 'error_date'
+    )
 
 
 class FeedEntryAdmin(admin.ModelAdmin):
@@ -15,6 +20,10 @@ class FeedEntryAdmin(admin.ModelAdmin):
     list_display = ('published', 'title', 'feed')
     list_filter = ('feed', )
     search_fields = ('title', 'summary')
+
+    readonly_fields = (
+        'entry_id',
+    )
 
 
 class KeywordFilterAdmin(admin.ModelAdmin):

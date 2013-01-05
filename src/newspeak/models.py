@@ -48,7 +48,7 @@ class Feed(models.Model):
     # Preserve some error data
     error_state = models.BooleanField(
         _('error'), help_text=_('Latest crawl yielded error.'),
-        default=False, db_index=True)
+        default=False, db_index=True, editable=False)
     error_description = models.TextField(_('error description'),
         help_text=_('Description of latest crawl error.'), editable=False)
     error_date = models.DateTimeField(_('error date'), null=True,
@@ -95,9 +95,8 @@ class FeedEntry(models.Model):
     entry_id = models.CharField(_('remote entry id'), null=True,
         db_index=True, editable=False, max_length=255)
 
-    published = models.DateTimeField(_('time published'), editable=False)
-    updated = models.DateTimeField(_('time updated'),
-        editable=False, null=True)
+    published = models.DateTimeField(_('time published'))
+    updated = models.DateTimeField(_('time updated'), null=True)
 
     summary = models.TextField(_('summary'))
 
