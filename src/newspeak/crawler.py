@@ -109,9 +109,28 @@ def update_feed(feed):
             for entry in parsed.entries:
                 update_entry(feed, entry)
 
-            # Make sure the feed ID and last update are synchronized
+            # Make sure the feed ID is synchronized
             # feed.feed_id = parsed.id
-            feed.updated = parsed_updated
+
+            if parsed_updated:
+                # Get latest update from feed
+                feed.updated = parsed_updated
+
+            else:
+                # Get latest update from database
+                updated_entries = feed.entries.filter(updated__isnull=False)
+
+                try:
+                    latest = updated_entries.order_by('-updated')[0]
+
+                    logger.debug('Latest updated entry `%s` at `%s`',
+                        latest, latest.updated)
+
+                    feed.updated = latest.updated
+
+                except IndexError:
+                    # No entries exist in feed or none have updated set
+                    feed.updated = None
 
             # Set title and subtitle only if not already set
             if not feed.title:
