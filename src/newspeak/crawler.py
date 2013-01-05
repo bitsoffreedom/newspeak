@@ -2,9 +2,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 import eventlet
-from eventlet.green import urllib2
 
-import feedparser
+feedparser = eventlet.import_patched('feedparser')
 
 from django.utils.timezone import now
 
@@ -82,8 +81,7 @@ def update_feed(feed):
 
     try:
         # Fetch and parse the feed
-        rawdata = urllib2.urlopen(feed.url).read()
-        parsed = feedparser.parse(rawdata)
+        parsed = feedparser.parse(feed.url)
 
         # Check for well-formedness
         if parsed.bozo:
