@@ -28,8 +28,23 @@ Simply perform the following steps:
    the URL is required, the description and title will be fetched
    automatically, as well as the first set of entries.
 
+#. (Optionally) Configure one or more keyword-based filters for your feed(s).
+
 #. Make sure the following command gets executed to update the feeds::
 
        newspeak update_feeds
 
    (Optionally, add `-v <1|2|3>` to get more feedback on the process.)
+
+#. Look at the pretty feeds: open `http://127.0.0.1:8000/all/rss/` or
+   `http://127.0.0.1:8000/all/atom/` in your favorite feed reader. All input 
+   feeds will be aggregated there.
+
+Note: alternatively, the original feeds and keywords used by Bits of Freedom
+are contained in a fixture called `feeds_keywords_bof.json`. This fixture
+can be loaded using::
+
+    newspeak loaddata feeds_keywords_bof
+
+After this running `update_feeds` should give a nice idea of what this package
+is capable of.
