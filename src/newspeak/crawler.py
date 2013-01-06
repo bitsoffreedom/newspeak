@@ -1,61 +1,17 @@
 import logging
 logger = logging.getLogger(__name__)
 
-import re
-
 import eventlet
 
 feedparser = eventlet.import_patched('feedparser')
 
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
-from django.utils.functional import memoize
 
 from .models import Feed, FeedEntry
-from .utils import datetime_from_struct
-
-
-def get_or_create_entry(**kwargs):
-    """ Get or create feed entry with specified kwargs without saving. """
-
-    try:
-        # Updating an existing object
-        db_entry = FeedEntry.objects.get(**kwargs)
-
-        logger.debug('Updating existing entry %s', db_entry)
-
-    except FeedEntry.DoesNotExist:
-        # Creating a new object
-        db_entry = FeedEntry(**kwargs)
-
-        logger.debug('Creating new entry %s', db_entry)
-
-    return db_entry
-
-
-def keywords_to_regex(keywords):
-    """ Take keywords, return compiled regex. """
-
-    regex_parts = []
-    # Construct regex for keyword filter
-    for keyword in keywords.split(','):
-        # Strip leading or trailing spaces from keyword
-        keyword = keyword.strip()
-
-        keyword = keyword.replace('*', '\w*')
-        keyword = keyword.replace('?', '\w')
-
-        regex_parts.append(keyword)
-
-    regex = '|'.join(regex_parts)
-
-    logger.debug('Compiling regular expression: %s', regex)
-
-    return re.compile(regex)
-
-# Cache the compiled regular expressions - never compile the same twice
-_regex_cache = {}
-keywords_to_regex = memoize(keywords_to_regex, _regex_cache, 1)
+from .utils import (
+    datetime_from_struct, get_or_create_object, keywords_to_regex
+)
 
 
 def filter_entry(feed, entry):
@@ -120,12 +76,14 @@ def update_entry(feed, entry):
     if hasattr(entry, 'id'):
         logger.debug('Attempt matching by entry ID %s', entry.id)
 
-        db_entry = get_or_create_entry(feed=feed, entry_id=entry.id)
+        db_entry = get_or_create_object(
+            FeedEntry, feed=feed, entry_id=entry.id)
 
     elif hasattr(entry, 'link'):
         logger.debug('Attempt matching by entry link %s', entry.link)
 
-        db_entry = get_or_create_entry(feed=feed, entry_id=None, link=entry.link)
+        db_entry = get_or_create_object(
+            FeedEntry, feed=feed, entry_id=None, link=entry.link)
 
     else:
         raise Exception('Could not identify entry by link or ID.')
