@@ -1,6 +1,9 @@
 import logging
 logger = logging.getLogger(__name__)
 
+import re
+from fnmatch import fnmatchcase
+
 import eventlet
 
 feedparser = eventlet.import_patched('feedparser')
@@ -30,8 +33,82 @@ def get_or_create_entry(**kwargs):
     return db_entry
 
 
+def filter_text(text, keywords):
+    """
+    Filter text by keywords. Returns True if any of keywords
+    are found in `text`, return False otherwise.
+    """
+
+    Remove punctuation and split into words
+    p = re.compile(r'\W+')
+    words = p.split(text)
+
+    for keyword in keywords.split(','):
+        # Strip leading or trailing spaces from keyword
+        keyword = keyword.strip()
+
+        # Execute word match for every keyword
+        for word in words:
+            if fnmatchcase(word, keyword):
+                return True
+
+    return False
+
+
+def filter_entry(feed, entry):
+    """
+    Return the result of applying filters to a feed entry. True when entry
+    is to be included, False if the entry is to be discarded.
+    """
+    for feed_filter in feed.filters.filter(active=True):
+        logger.debug('Applying filter %s to entry %s',
+            feed_filter, entry.title
+        )
+
+        if feed_filter.filter_inclusive:
+            # Keep only matched entries
+
+            if feed_filter.filter_title and \
+                filter_text(entry.title, feed_filter.keywords):
+
+                # Pass: process next filter
+                break
+
+            if feed_filter.filter_summary and \
+                filter_text(entry.summary, feed_filter.keywords):
+
+                # Pass: process next filter
+                break
+
+            # No match: discard entry
+            return False
+
+        else:
+            # Exclusive filtering - discard matching entries
+            if feed_filter.filter_title and \
+                filter_text(entry.title, feed_filter.keywords):
+                # Match: discard this entry
+                return False
+
+            if feed_filter.filter_summary and \
+                filter_text(entry.summary, feed_filter.keywords):
+                # Match: discard this entry
+                return False
+
+    # By default, include all entries
+    return True
+
+
 def update_entry(feed, entry):
     """ Update a specified entry for the feed. """
+
+    # Consider whether or not to discard the item
+    if not filter_entry(feed, entry):
+        # Entry to be discarded - stop further processing
+
+        # Possible problem: we might want to delete existing entries now
+        # that they are filtered. Then again: we might not.
+        return
 
     if hasattr(entry, 'id'):
         logger.debug('Attempt matching by entry ID %s', entry.id)

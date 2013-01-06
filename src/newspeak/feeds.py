@@ -19,7 +19,6 @@ class NewspeakRSSFeed(Feed):
     author_link = \
         'https://rejo.zenger.nl/inzicht/newspeak-van-de-nederlandse-overheid/'
 
-
     def items(self):
         """ Return a queryset of all feed items to display. """
         feed_qs = FeedEntry.objects.all()

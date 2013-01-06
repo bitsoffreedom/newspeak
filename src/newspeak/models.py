@@ -13,9 +13,22 @@ class KeywordFilter(models.Model):
         verbose_name_plural = _('keyword filters')
 
     name = models.CharField(_('name'), max_length=255)
-    keywords = models.TextField(_('description'))
-    filter_title = models.BooleanField(_('filter title'))
-    filter_summary = models.BooleanField(_('filter summary'))
+    active = models.BooleanField(_('active'), default=True, db_index=True)
+
+    keywords = models.TextField(_('keywords'),
+        help_text=_(
+            'Keywords to filter by, seperated by comma\'s. Shell-style '
+            'wildcards can be used: "chee*" will match both "cheese" as '
+            'well as "cheetah".'
+        )
+    )
+
+    # Filter specs
+    filter_inclusive = models.BooleanField(_('filter inclusive'),
+        help_text=_('Whether to perform inclusive or exclusive filtering.'),
+        default=True)
+    filter_title = models.BooleanField(_('filter title'), default=True)
+    filter_summary = models.BooleanField(_('filter summary'), default=True)
 
     def __unicode__(self):
         return self.name
