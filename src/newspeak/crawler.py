@@ -2,7 +2,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 import re
-from fnmatch import fnmatchcase
 
 import eventlet
 
@@ -33,26 +32,25 @@ def get_or_create_entry(**kwargs):
     return db_entry
 
 
-def filter_text(text, keywords):
-    """
-    Filter text by keywords. Returns True if any of keywords
-    are found in `text`, return False otherwise.
-    """
+def keywords_to_regex(keywords):
+    """ Take keywords, return compiled regex. """
 
-    Remove punctuation and split into words
-    p = re.compile(r'\W+')
-    words = p.split(text)
-
+    regex_parts = []
+    # Construct regex for keyword filter
     for keyword in keywords.split(','):
         # Strip leading or trailing spaces from keyword
         keyword = keyword.strip()
 
-        # Execute word match for every keyword
-        for word in words:
-            if fnmatchcase(word, keyword):
-                return True
+        keyword = keyword.replace('*', '\w*')
+        keyword = keyword.replace('?', '\w')
 
-    return False
+        regex_parts.append(keyword)
+
+    regex = '|'.join(regex_parts)
+
+    logger.debug('Constructed regular expression: %s', regex)
+
+    return re.compile(regex)
 
 
 def filter_entry(feed, entry):
@@ -65,17 +63,19 @@ def filter_entry(feed, entry):
             feed_filter, entry.title
         )
 
+        pattern = keywords_to_regex(feed_filter.keywords)
+
         if feed_filter.filter_inclusive:
             # Keep only matched entries
 
             if feed_filter.filter_title and \
-                filter_text(entry.title, feed_filter.keywords):
+                pattern.search(entry.title):
 
                 # Pass: process next filter
                 break
 
             if feed_filter.filter_summary and \
-                filter_text(entry.summary, feed_filter.keywords):
+                pattern.search(entry.summary):
 
                 # Pass: process next filter
                 break
@@ -86,12 +86,14 @@ def filter_entry(feed, entry):
         else:
             # Exclusive filtering - discard matching entries
             if feed_filter.filter_title and \
-                filter_text(entry.title, feed_filter.keywords):
+                pattern.search(entry.title):
+
                 # Match: discard this entry
                 return False
 
             if feed_filter.filter_summary and \
-                filter_text(entry.summary, feed_filter.keywords):
+                pattern.search(entry.summary):
+
                 # Match: discard this entry
                 return False
 

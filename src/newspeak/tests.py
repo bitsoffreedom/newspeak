@@ -4,7 +4,7 @@ from django.test import TestCase
 
 from .models import Feed, FeedEntry, KeywordFilter
 
-from .crawler import update_feeds, filter_text, filter_entry
+from .crawler import update_feeds, filter_entry, keywords_to_regex
 
 
 class FetchTests(TestCase):
@@ -57,7 +57,7 @@ class BofFeedsTests(TestCase):
         self.assertTrue(updated)
 
 
-class TextFilterTests(TestCase):
+class RegexFilterTests(TestCase):
     """ Test the text filter logic. """
 
     # Some real texts to work with
@@ -87,44 +87,45 @@ class TextFilterTests(TestCase):
     def test_filter_text_single(self):
         """ Test filter_text with a single keyword. """
 
-        self.assertTrue(filter_text(self.text_2, 'kamervragen'))
+        self.assertTrue(keywords_to_regex('kamervragen').search(self.text_2))
 
         # Matches should be case sensitive
-        self.assertTrue(filter_text(self.text_1, 'Reactie'))
-        self.assertFalse(filter_text(self.text_1, 'reactie'))
+        self.assertTrue(keywords_to_regex('Reactie').search(self.text_1))
+        self.assertFalse(keywords_to_regex('reactie').search(self.text_1))
 
         # Make sure punctuation marks are not counted
-        self.assertTrue(filter_text(self.text_3, 'afgeluisterd'))
+        self.assertTrue(keywords_to_regex('afgeluisterd').search(self.text_3))
 
     def test_filter_text_three(self):
         """ Test filter_text with three keywords. """
         keywords = 'kamervragen, internetters, Reactie'
+        pattern = keywords_to_regex(keywords)
 
-        self.assertTrue(filter_text(self.text_1, keywords))
-        self.assertTrue(filter_text(self.text_2, keywords))
-        self.assertFalse(filter_text(self.text_3, keywords))
+        self.assertTrue(pattern.search(self.text_1))
+        self.assertTrue(pattern.search(self.text_2))
+        self.assertFalse(pattern.search(self.text_3))
 
     def test_filter_text_single_wildcard(self):
         """ Test filter_text with single keyword and wildcards. """
 
-        self.assertTrue(filter_text(self.text_2, 'kamer*'))
+        self.assertTrue(keywords_to_regex('kamer*').search(self.text_2))
 
-        self.assertTrue(filter_text(self.text_1, '?eactie'))
-        self.assertTrue(filter_text(self.text_1, '?eactie'))
+        self.assertTrue(keywords_to_regex('*eactie').search(self.text_1))
 
-        self.assertFalse(filter_text(self.text_1, 'hottentottenhutten*'))
-        self.assertFalse(filter_text(self.text_1, 'priv*'))
+        self.assertFalse(keywords_to_regex('hottentottenhutten*').search(self.text_1))
+        self.assertFalse(keywords_to_regex('priv*').search(self.text_1))
 
-        self.assertTrue(filter_text(self.text_3, '*getapt*'))
+        self.assertTrue(keywords_to_regex('*getapt*').search(self.text_3))
 
     def test_filter_text_three_wildcard(self):
         """ Test filter_text with three keywords and wildcards. """
 
         keywords = '*vragen, inter*etters, ?eactie'
+        pattern = keywords_to_regex(keywords)
 
-        self.assertTrue(filter_text(self.text_1, keywords))
-        self.assertTrue(filter_text(self.text_2, keywords))
-        self.assertFalse(filter_text(self.text_3, keywords))
+        self.assertTrue(pattern.search(self.text_1))
+        self.assertTrue(pattern.search(self.text_2))
+        self.assertFalse(pattern.search(self.text_3))
 
 
 class EntryFilterTests(TestCase):
