@@ -9,6 +9,7 @@ feedparser = eventlet.import_patched('feedparser')
 
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
+from django.utils.functional import memoize
 
 from .models import Feed, FeedEntry
 from .utils import datetime_from_struct
@@ -48,9 +49,13 @@ def keywords_to_regex(keywords):
 
     regex = '|'.join(regex_parts)
 
-    logger.debug('Constructed regular expression: %s', regex)
+    logger.debug('Compiling regular expression: %s', regex)
 
     return re.compile(regex)
+
+# Cache the compiled regular expressions - never compile the same twice
+_regex_cache = {}
+keywords_to_regex = memoize(keywords_to_regex, _regex_cache, 1)
 
 
 def filter_entry(feed, entry):
