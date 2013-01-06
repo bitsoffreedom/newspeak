@@ -129,6 +129,7 @@ def update_feed(feed):
                 # update - this saves a lot of effort in the filtering
                 # process down the road
 
+                entry_update = True
                 if hasattr(entry, 'updated_parsed'):
                     entry_parsed_updated = \
                         datetime_from_struct(entry.updated_parsed)
