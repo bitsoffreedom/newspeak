@@ -1,8 +1,22 @@
 from django.contrib.syndication.views import Feed
 from django.utils.feedgenerator import Atom1Feed
+from django.utils.decorators import method_decorator
+from django.views.decorators.http import last_modified
+
+from .models import Feed as NewspeakFeed, FeedEntry
 
 
-from .models import FeedEntry
+def last_modified_func(request):
+    """
+    Helper function for finding the last modified date on the aggregate
+    of feeds.
+    """
+    try:
+        latest = NewspeakFeed.objects.order_by('-updated')[0]
+    except IndexError:
+        return None
+
+    return latest.updated
 
 
 class NewspeakRSSFeed(Feed):
@@ -18,7 +32,6 @@ class NewspeakRSSFeed(Feed):
     author_email = 'rejo@zenger.nl'
     author_link = \
         'https://rejo.zenger.nl/inzicht/newspeak-van-de-nederlandse-overheid/'
-
 
     def items(self):
         """ Return a queryset of all feed items to display. """
@@ -61,6 +74,15 @@ class NewspeakRSSFeed(Feed):
 
     # def item_enclosure_mime_type(self, obj):
     #     pass
+
+    @method_decorator(last_modified(last_modified_func))
+    def __call__(self, request, *args, **kwargs):
+        """ Properly set last modified header. """
+
+        response = \
+            super(NewspeakRSSFeed, self).__call__(request, *args, **kwargs)
+
+        return response
 
 
 class NewspeakAtomFeed(NewspeakRSSFeed):
