@@ -162,6 +162,18 @@ def update_entry(feed, entry):
     db_entry.published = datetime_from_struct(entry.published_parsed)
     db_entry.updated = datetime_from_struct(entry.updated_parsed)
 
+    # Extraction of summary
+    if feed.summary_xpath and (not db_entry.summary or feed.summary_override):
+        extracted_summary = extract_xpath(entry.link, feed.summary_xpath)
+
+        if extracted_summary:
+            # Some value was found, add it to the entry
+            db_entry.summary = extracted_summary
+
+            logger.debug('Extracted summary for %s from %s',
+                db_entry, entry.link
+            )
+
     # Save it to the database
     # (Required before being able to link stuff like content/enclosures)
     db_entry.save()
@@ -225,7 +237,7 @@ def update_entry(feed, entry):
             db_enclosure.save()
 
             logger.debug('Extracted enclosure %s for %s from %s',
-                db_enclosure, db_entry, extracted_href
+                db_enclosure, db_entry, entry.link
             )
 
 

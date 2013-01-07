@@ -462,3 +462,26 @@ class XPathExtractionTests(TestCase):
 
         # Asssert some enclosures are present
         self.assertTrue(feed.entries.filter(enclosures__isnull=False).exists())
+
+    def test_extract_summary_feed(self):
+        """ Test extracting an actual enclosure using a Feed. """
+
+        feed = Feed(
+            url='https://zoek.officielebekendmakingen.nl/rss/dossier/26643',
+            summary_xpath="id('main-column')",
+            summary_override=True
+        )
+
+        feed.save()
+
+        # Find the link from the previous test
+        entry = feed.entries.get(
+            link='https://zoek.officielebekendmakingen.nl/kst-26643-260.html'
+        )
+
+        # Assert presence of content in summary
+        self.assertIn(
+            '<span class="functie">De minister van Binnenlandse Zaken en '
+            'Koninkrijksrelaties,</span>',
+            entry.summary
+        )
