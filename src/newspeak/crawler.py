@@ -3,7 +3,12 @@ logger = logging.getLogger(__name__)
 
 import eventlet
 
+# Use Eventlet for parallel processing of HTTP requests
 feedparser = eventlet.import_patched('feedparser')
+from eventlet.green import urllib2
+
+from lxml import html
+from lxml.html import HtmlMixin
 
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
@@ -12,6 +17,61 @@ from .models import Feed, FeedEntry, FeedContent, FeedEnclosure
 from .utils import (
     datetime_from_struct, get_or_create_object, keywords_to_regex
 )
+
+
+def extract_xpath(url, xpath):
+    """
+    Extract XPath expression from the HTML at specified URL and return the
+    HTML/text representation of its contents, with all links made absolute.
+    """
+    # Fetch and parse
+    logger.debug('Fetching and parsing %s', url)
+
+    # Use urllib2 directly for enabled SSL support (LXML doesn't by default)
+    opener = urllib2.urlopen(url)
+
+    # Parse
+    parsed = html.parse(opener)
+
+    # Execute XPath
+    logger.debug('Resolving XPath %s for %s', xpath, url)
+    result = parsed.xpath(xpath)
+
+    if not result:
+        logger.warning(
+            'XPath %s did not return a value for %s, returning empty string.',
+            xpath, url)
+
+        return ''
+
+    # If the result is already a string, we're done now
+    if isinstance(result, basestring):
+        return result
+
+    # The result should ideally only contain a single element
+    if len(result) > 1:
+        logger.warning(
+            'XPath %s returned multiple elements for %s, ignoring all but '
+            ' the first.'
+        )
+
+    # Take the first element in the XPath result set
+    result = result[0]
+
+    # Again, if the result is simply a string, we're done
+    if isinstance(result, basestring):
+        return result
+
+    # From now on, we will assume it is some HTML element
+    assert isinstance(result, HtmlMixin)
+
+    # Make all links in the result absolute
+    result.make_links_absolute()
+
+    # Turn the result into a string
+    result = html.tostring(result)
+
+    return result
 
 
 def filter_entry(feed, entry):

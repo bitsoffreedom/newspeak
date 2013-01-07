@@ -7,7 +7,9 @@ from django.core.urlresolvers import reverse
 
 from .models import Feed, FeedEntry, KeywordFilter
 
-from .crawler import update_feeds, filter_entry, keywords_to_regex
+from .crawler import (
+    update_feeds, filter_entry, keywords_to_regex, extract_xpath
+)
 
 
 class FetchTests(TestCase):
@@ -379,3 +381,66 @@ class EntryFilterTests(TestCase):
         self.assertFalse(filter_entry(self.feed, self.entry_1))
         self.assertTrue(filter_entry(self.feed, self.entry_2))
         self.assertTrue(filter_entry(self.feed, self.entry_3))
+
+
+class XPathExtractionTests(TestCase):
+    """ Test extraction of XPath expressions from URL's. """
+
+    def test_extract_pdf(self):
+        """ Test extracting the PDF url from a government announcement. """
+        url = 'https://zoek.officielebekendmakingen.nl/kst-201314.html'
+        xpath = "string(id('downloadPdfHyperLink')/attribute::href)"
+
+        result = extract_xpath(url, xpath)
+
+        # Assert the value makes sense
+        self.assertEquals(result, 'kst-201314.pdf')
+
+        # This should also work without string()
+        xpath = "id('downloadPdfHyperLink')/attribute::href"
+
+        result = extract_xpath(url, xpath)
+        self.assertEquals(result, 'kst-201314.pdf')
+
+        # Now make sure the returned URL is available
+        import urllib2
+        from urlparse import urljoin
+
+        pdf_url = urljoin(url, result)
+        resource = urllib2.urlopen(pdf_url)
+        info = resource.info()
+
+        self.assertEquals(resource.getcode(), 200)
+        self.assertEquals(info.gettype(), 'application/pdf')
+
+    def test_extract_content(self):
+        """ Test extracting the contents from a government announcement. """
+        url = 'https://zoek.officielebekendmakingen.nl/kst-26643-260.html'
+        xpath = "id('main-column')"
+
+        result = extract_xpath(url, xpath)
+
+        # Assert presence of some text fragment
+        self.assertIn(
+            'Aan de Voorzitter van de Tweede Kamer der Staten-Generaal',
+            result
+        )
+
+        # Assert the presence of HTML elements
+        self.assertIn(
+            '<span class="functie">De minister van Binnenlandse Zaken en '
+            'Koninkrijksrelaties,</span>',
+            result
+        )
+
+        # Assert no presence of menu item
+        self.assertNotIn('Over deze site', result)
+
+        # Assert that URL's have been made absolute
+        self.assertIn(
+            '<a href="https://zoek.officielebekendmakingen.nl/kst-26643-215.'
+            'html" title="link naar publicatie kst-26643-215">26 643, '
+            'nr. 215</a>',
+            result
+        )
+

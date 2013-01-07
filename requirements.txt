@@ -7,3 +7,4 @@ feedparser
 pytz
 eventlet
 mock
+lxml
