@@ -1,6 +1,8 @@
 import logging
 logger = logging.getLogger(__name__)
 
+from urlparse import urljoin
+
 import eventlet
 
 # Use Eventlet for parallel processing of HTTP requests
@@ -12,6 +14,7 @@ from lxml.html import HtmlMixin
 
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
+from django.core.exceptions import ValidationError
 
 from .models import Feed, FeedEntry, FeedContent, FeedEnclosure
 from .utils import (
@@ -195,6 +198,36 @@ def update_entry(feed, entry):
         logger.debug('%d enclosures added to entry %s',
             len(entry.enclosures), db_entry)
 
+    # Extraction of enclosures
+    if feed.enclosure_xpath:
+        extracted_href = extract_xpath(entry.link, feed.enclosure_xpath)
+
+        # Make the resulting URL absolute
+        extracted_href = urljoin(entry.link, extracted_href)
+
+        db_enclosure = FeedEnclosure(
+            entry=db_entry,
+            href=extracted_href,
+            length=0,
+            mime_type=feed.enclosure_mime_type
+        )
+
+        # Validate the results - the URL might be invalid
+        try:
+            db_enclosure.full_clean()
+
+        except ValidationError as e:
+            # Log the exception, don't save
+            logger.exception(e)
+
+        else:
+            # All went fine, saving
+            db_enclosure.save()
+
+            logger.debug('Extracted enclosure %s for %s from %s',
+                db_enclosure, db_entry, extracted_href
+            )
+
 
 def update_feed(feed):
     """ Update a single feed. """
@@ -303,10 +336,10 @@ def update_feed(feed):
 
             # Set title and subtitle only if not already set
             if not feed.title:
-                feed.title = parsed.feed.title
+                feed.title = getattr(parsed.feed, 'title', 'No title')
 
             if not feed.subtitle:
-                feed.subtitle = parsed.feed.subtitle
+                feed.subtitle = getattr(parsed.feed, 'subtitle', '')
 
             # Clear any possible error state
             feed.error_state = False

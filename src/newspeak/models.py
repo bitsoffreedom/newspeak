@@ -34,7 +34,42 @@ class KeywordFilter(models.Model):
         return self.name
 
 
-class Feed(models.Model):
+# To make it easier to possibly disable the following specific features -
+# and to make their functionality clearly seperated from the Feed
+# aggregation functionality, they are implemented as seperate Mixin classes.
+class EnclosureXPathExtractionMixin(models.Model):
+    """
+    Model mixin for extraction of enclosures from the link HTML using XPath.
+    """
+    class Meta:
+        abstract = True
+
+    enclosure_xpath = models.CharField(_('enclosure XPath'), blank=True,
+        help_text=_('XPath expression to find the enclosure href. Leave '
+                    'blank to disable extraction.'), max_length=1024)
+    enclosure_mime_type = models.CharField('enclosure MIME type', blank=True,
+        help_text=_('MIME type to use for extracted enclosures.'),
+        max_length=255)
+
+
+class SummaryXPathExtractionMixin(models.Model):
+    """
+    Model mixin for exdtraction of summary from the link HTML using XPath.
+    """
+    class Meta:
+        abstract = True
+
+    summary_xpath = models.CharField(_('summary XPath'), blank=True,
+        help_text=_('XPath expression to find the summary content. Leave '
+                    'blank to disable extraction.'), max_length=1024)
+    summary_override = models.BooleanField(_('override summary'),
+        help_text=_('Whether or not to override existing summaries with '
+                    'extracted values.'), default=False)
+
+
+class Feed(EnclosureXPathExtractionMixin,
+           SummaryXPathExtractionMixin,
+           models.Model):
     """
     A Feed represents an Atom or RSS feed resource to be aggregated.
     """
@@ -154,6 +189,10 @@ class FeedEnclosure(models.Model):
     length = models.PositiveIntegerField(_('length'))
     mime_type = models.CharField(_('MIME type'), max_length=255)
 
+    def __unicode__(self):
+        """ Natural representation is href. """
+        return self.href
+
 
 class FeedContent(models.Model):
     """
@@ -171,3 +210,7 @@ class FeedContent(models.Model):
     value = models.TextField(_('value'))
     mime_type = models.CharField(_('MIME type'), max_length=255)
     language = models.CharField(_('language'), max_length=16)
+
+    def __unicode__(self):
+        """ Natural representation is mime_type. """
+        return self.mime_type

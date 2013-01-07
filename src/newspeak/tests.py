@@ -1,4 +1,6 @@
 import feedparser
+import urllib2
+from urlparse import urljoin
 
 from mock import Mock
 
@@ -203,8 +205,12 @@ class BofFeedsTests(TestCase):
             self.assertTrue(feed.updated)
 
             # Make sure the value is at least that of the latest post
+
+            # Somehow, this test seems to fail sometimes - some feed
+            # apparently update items without updating the feed itself.
+            # What would be a good solution to this?
             self.assertGreaterEqual(
-                feed.updated, feed.entries.order_by('-updated')[0].updated
+                feed.updated, feed.entries.order_by('-updated')[0].updated,
             )
 
 
@@ -403,9 +409,6 @@ class XPathExtractionTests(TestCase):
         self.assertEquals(result, 'kst-201314.pdf')
 
         # Now make sure the returned URL is available
-        import urllib2
-        from urlparse import urljoin
-
         pdf_url = urljoin(url, result)
         resource = urllib2.urlopen(pdf_url)
         info = resource.info()
@@ -444,3 +447,18 @@ class XPathExtractionTests(TestCase):
             result
         )
 
+    def test_extract_enclosure_feed(self):
+        """ Test extracting an actual enclosure using a Feed. """
+
+        feed = Feed(
+            url='https://zoek.officielebekendmakingen.nl/rss/dossier/26643',
+            enclosure_xpath=(
+                "string(id('downloadPdfHyperLink')/attribute::href)"
+            ),
+            enclosure_mime_type='application/pdf'
+        )
+
+        feed.save()
+
+        # Asssert some enclosures are present
+        self.assertTrue(feed.entries.filter(enclosures__isnull=False).exists())
