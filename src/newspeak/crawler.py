@@ -68,6 +68,7 @@ def update_entry(feed, entry):
     # Consider whether or not to discard the item
     if not filter_entry(feed, entry):
         # Entry to be discarded - stop further processing
+        logger.debug('Discarding entry %s', entry.title)
 
         # Possible problem: we might want to delete existing entries now
         # that they are filtered. Then again: we might not.
