@@ -39,22 +39,23 @@ class BofFeedsTests(TestCase):
         self.assertTrue(FeedEntry.objects.exclude(title=None).exists())
         self.assertTrue(FeedEntry.objects.exclude(summary=None).exists())
 
-        # Assert for each feed that the updated value makes sense
-        updated = False
-        for feed in Feed.objects.filter(active=True):
-            if feed.entries.filter(updated__isnull=False).exists():
-                # Posts exist - updated should match
-                self.assertTrue(feed.updated)
+        # Perform checks on feeds for which all entries have updated set
+        updated_feeds = Feed.objects.filter(
+            active=True, entries__updated__isnull=False
+        )
 
-                # Make sure the value is at least that of the latest post
-                self.assertGreaterEqual(
-                    feed.updated, feed.entries.order_by('-updated')[0].updated
-                )
+        # At least one feed should have entries with updated set
+        self.assertTrue(updated_feeds.exists())
 
-                updated = True
+        # All of these should adhere to the following condition
+        for feed in updated_feeds:
+            # Posts exist - updated should match
+            self.assertTrue(feed.updated)
 
-        # Make sure at least one feed has it's updated value properly set
-        self.assertTrue(updated)
+            # Make sure the value is at least that of the latest post
+            self.assertGreaterEqual(
+                feed.updated, feed.entries.order_by('-updated')[0].updated
+            )
 
 
 class RegexFilterTests(TestCase):
