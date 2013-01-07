@@ -100,7 +100,12 @@ class Feed(models.Model):
 
 
 class FeedEntry(models.Model):
-    """ Feed entries. """
+    """
+    Feed entries, largely modelled after feedparser's.
+
+    Ref:
+    http://packages.python.org/feedparser/reference-entry.html
+    """
 
     class Meta:
         verbose_name = _('entry')
@@ -130,3 +135,39 @@ class FeedEntry(models.Model):
             return self.title
 
         return self.link
+
+
+class FeedEnclosure(models.Model):
+    """
+    Feed enclosures, largely modelled after feedparser's.
+
+    Ref:
+    http://packages.python.org/feedparser/reference-entry-enclosures.html
+    """
+    class Meta:
+        verbose_name = _('enclosure')
+        verbose_name_plural = _('enclosures')
+
+    entry = models.ForeignKey(FeedEntry, related_name='enclosures')
+
+    href = models.URLField(_('href'), max_length=255)
+    length = models.PositiveIntegerField(_('length'))
+    mime_type = models.CharField(_('MIME type'), max_length=255)
+
+
+class FeedContent(models.Model):
+    """
+    Feed content, largely modelled after feedparser's.
+
+    Ref:
+    http://packages.python.org/feedparser/reference-entry-content.html
+    """
+    class Meta:
+        verbose_name = _('content')
+        verbose_name_plural = _('content')
+
+    entry = models.ForeignKey(FeedEntry, related_name='content')
+
+    value = models.TextField(_('value'))
+    mime_type = models.CharField(_('MIME type'), max_length=255)
+    language = models.CharField(_('language'), max_length=16)

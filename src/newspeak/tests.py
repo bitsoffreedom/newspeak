@@ -1,6 +1,9 @@
+import feedparser
+
 from mock import Mock
 
 from django.test import TestCase
+from django.core.urlresolvers import reverse
 
 from .models import Feed, FeedEntry, KeywordFilter
 
@@ -10,15 +13,160 @@ from .crawler import update_feeds, filter_entry, keywords_to_regex
 class FetchTests(TestCase):
     """ Tests relating to fetching and parsing of feeds. """
 
-    def test_feed(self):
-        """ Test fetching and parsing an Atom feed. """
+    def setUp(self):
+        self.rss_url = reverse('rss_all')
+        self.atom_url = reverse('atom_all')
 
+    def test_rijksoverheid(self):
+        """ Test feed from Rijksoverheid. """
+
+        # Test one feed
         feed = Feed(
             url='http://feeds.rijksoverheid.nl/onderwerpen/telecomgegevens-'
                 'voor-opsporing/documenten-en-publicaties.rss')
 
         # Save and fetch
         feed.save()
+
+        # Assert entries are present
+        self.assertTrue(feed.entries.exists())
+
+        # Test requesting the aggregate RSS and Atom feed
+        response = self.client.get(self.rss_url)
+        parsed = feedparser.parse(response.content)
+        self.assertEquals(feed.entries.count(), len(parsed.entries))
+
+        response = self.client.get(self.atom_url)
+        parsed = feedparser.parse(response.content)
+        self.assertEquals(feed.entries.count(), len(parsed.entries))
+
+    def test_nrc(self):
+        """ Test feed for NRC Handelsblad. """
+
+        # Test one feed
+        feed = Feed(url='http://www.nrc.nl/rss.php')
+
+        # Save and fetch
+        feed.save()
+
+        # Assert entries are present
+        self.assertTrue(feed.entries.exists())
+
+        # Assert some author is present
+        self.assertTrue(feed.entries.exclude(author=None).exists())
+
+        # Asssert some content is present
+        self.assertTrue(feed.entries.filter(content__isnull=False).exists())
+
+        # Asssert some enclosures are present
+        self.assertTrue(feed.entries.filter(enclosures__isnull=False).exists())
+
+        # Test requesting the aggregate RSS and Atom feed
+        response = self.client.get(self.rss_url)
+        parsed = feedparser.parse(response.content)
+        self.assertEquals(feed.entries.count(), len(parsed.entries))
+
+        response = self.client.get(self.atom_url)
+        parsed = feedparser.parse(response.content)
+        self.assertEquals(feed.entries.count(), len(parsed.entries))
+
+        # Assert some enclosure is found
+        enclosure_found = False
+        for entry in parsed.entries:
+            if entry.enclosures and entry.enclosures[0].href:
+                enclosure_found = True
+
+        self.assertTrue(enclosure_found)
+
+    def test_nytimes(self):
+        """ Test feed for NYTimes. """
+
+        # Test one feed
+        feed = Feed(
+            url='http://www.nytimes.com/services/xml/rss/nyt/GlobalHome.xml')
+
+        # Save and fetch
+        feed.save()
+
+        # Assert entries are present
+        self.assertTrue(feed.entries.exists())
+
+        # Assert some author is present
+        self.assertTrue(feed.entries.exclude(author=None).exists())
+
+        # Test requesting the aggregate RSS and Atom feed
+        response = self.client.get(self.rss_url)
+        parsed = feedparser.parse(response.content)
+        self.assertEquals(feed.entries.count(), len(parsed.entries))
+
+        response = self.client.get(self.atom_url)
+        parsed = feedparser.parse(response.content)
+        self.assertEquals(feed.entries.count(), len(parsed.entries))
+
+    def test_nos_podcast(self):
+        """ Test podcast NOS Buitenland. """
+
+        # Test one feed
+        feed = Feed(url='http://feeds.nos.nl/nospodcastbuitenland')
+
+        # Save and fetch
+        feed.save()
+
+        # Assert entries are present
+        self.assertTrue(feed.entries.exists())
+
+        # Asssert some enclosures are present
+        self.assertTrue(feed.entries.filter(enclosures__isnull=False).exists())
+
+        # Test requesting the aggregate RSS and Atom feed
+        response = self.client.get(self.rss_url)
+        parsed = feedparser.parse(response.content)
+        self.assertEquals(feed.entries.count(), len(parsed.entries))
+
+        response = self.client.get(self.atom_url)
+        parsed = feedparser.parse(response.content)
+        self.assertEquals(feed.entries.count(), len(parsed.entries))
+
+    def test_aggregate(self):
+        """ Test multiple feed aggregation. """
+
+        # NRC
+        feed1 = Feed(url='http://www.nrc.nl/rss.php')
+        feed1.save()
+
+        # NOS
+        feed2 = Feed(url='http://feeds.nos.nl/nospodcastbuitenland')
+        feed2.save()
+
+        # Assert entries are present
+        self.assertTrue(FeedEntry.objects.exists())
+
+        # Assert total entries is both feed's entries combined
+        self.assertEquals(
+            FeedEntry.objects.count(),
+            feed1.entries.count() + feed2.entries.count()
+        )
+
+        # Assert some author is present
+        self.assertTrue(
+            FeedEntry.objects.exclude(author=None).exists())
+
+        # Asssert some content is present
+        self.assertTrue(
+            FeedEntry.objects.filter(content__isnull=False).exists())
+
+        # Asssert some enclosures are present
+        self.assertTrue(
+            FeedEntry.objects.filter(enclosures__isnull=False).exists())
+
+        # Test requesting the aggregate RSS and Atom feed
+        response = self.client.get(self.rss_url)
+        parsed = feedparser.parse(response.content)
+        self.assertEquals(FeedEntry.objects.count(), len(parsed.entries))
+
+        response = self.client.get(self.atom_url)
+        parsed = feedparser.parse(response.content)
+        self.assertEquals(FeedEntry.objects.count(), len(parsed.entries))
 
 
 class BofFeedsTests(TestCase):

@@ -8,7 +8,7 @@ feedparser = eventlet.import_patched('feedparser')
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
 
-from .models import Feed, FeedEntry
+from .models import Feed, FeedEntry, FeedContent, FeedEnclosure
 from .utils import (
     datetime_from_struct, get_or_create_object, keywords_to_regex
 )
@@ -94,14 +94,46 @@ def update_entry(feed, entry):
     db_entry.link = entry.link
     db_entry.summary = entry.summary
 
-    if hasattr(entry, 'author'):
-        db_entry.author = entry.author
+    db_entry.author = getattr(db_entry, 'author', None)
 
     db_entry.published = datetime_from_struct(entry.published_parsed)
     db_entry.updated = datetime_from_struct(entry.updated_parsed)
 
     # Save it to the database
+    # (Required before being able to link stuff like content/enclosures)
     db_entry.save()
+
+    # Feed content
+    if 'content' in entry:
+        for entry_content in entry.content:
+            # Even though standards require mimetype to be set,
+            # we are going to assume only value is set - the absolute minimum.
+            db_content = FeedContent(
+                entry=db_entry,
+                value=entry_content.value,
+                mime_type=entry_content.type or '',
+                language=entry_content.language or ''
+            )
+            db_content.save()
+
+        logger.debug('%d contents added to entry %s',
+            len(entry.content), db_entry)
+
+    # Feed enclosures
+    if 'enclosures' in entry:
+        for entry_enclosure in entry.enclosures:
+            # Even though standards require length and mimetype to be set,
+            # we are going to assume only href is set - the absolute minimum.
+            db_enclosure = FeedEnclosure(
+                entry=db_entry,
+                href=entry_enclosure.href,
+                length=entry_enclosure.length or 0,
+                mime_type=entry_enclosure.type or ''
+            )
+            db_enclosure.save()
+
+        logger.debug('%d enclosures added to entry %s',
+            len(entry.enclosures), db_entry)
 
 
 def update_feed(feed):

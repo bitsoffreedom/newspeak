@@ -1,6 +1,8 @@
 from django.contrib import admin
 
-from .models import Feed, FeedEntry, KeywordFilter
+from .models import (
+    Feed, FeedEntry, FeedEnclosure, FeedContent, KeywordFilter
+)
 
 
 class FeedAdmin(admin.ModelAdmin):
@@ -15,6 +17,16 @@ class FeedAdmin(admin.ModelAdmin):
     )
 
 
+class FeedEnclosureInline(admin.StackedInline):
+    model = FeedEnclosure
+    extra = 0
+
+
+class FeedContentInline(admin.StackedInline):
+    model = FeedContent
+    extra = 0
+
+
 class FeedEntryAdmin(admin.ModelAdmin):
     date_hierarchy = 'published'
     list_display = ('published', 'title', 'author', 'feed')
@@ -24,6 +36,8 @@ class FeedEntryAdmin(admin.ModelAdmin):
     readonly_fields = (
         'entry_id',
     )
+
+    inlines = (FeedEnclosureInline, FeedContentInline)
 
 
 class KeywordFilterAdmin(admin.ModelAdmin):

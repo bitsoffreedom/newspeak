@@ -52,14 +52,24 @@ class NewspeakRSSFeed(Feed):
     def item_pubdate(self, obj):
         return obj.published
 
-    # def item_enclosure_url(self, obj):
-    #     pass
+    # Enclosures: for now, render just the first enclosure
+    def item_enclosure_url(self, obj):
+        try:
+            return obj.enclosures.all()[0].href
+        except IndexError:
+            return None
 
-    # def item_enclosure_length(self, obj):
-    #     pass
+    def item_enclosure_length(self, obj):
+        try:
+            return obj.enclosures.all()[0].length
+        except IndexError:
+            return None
 
-    # def item_enclosure_mime_type(self, obj):
-    #     pass
+    def item_enclosure_mime_type(self, obj):
+        try:
+            return obj.enclosures.all()[0].mime_type
+        except IndexError:
+            return None
 
 
 class NewspeakAtomFeed(NewspeakRSSFeed):
