@@ -74,13 +74,13 @@ def update_entry(feed, entry):
         # that they are filtered. Then again: we might not.
         return
 
-    if hasattr(entry, 'id'):
+    if 'id' in entry:
         logger.debug('Attempt matching by entry ID %s', entry.id)
 
         db_entry = get_or_create_object(
             FeedEntry, feed=feed, entry_id=entry.id)
 
-    elif hasattr(entry, 'link'):
+    elif 'link' in entry:
         logger.debug('Attempt matching by entry link %s', entry.link)
 
         db_entry = get_or_create_object(
@@ -185,7 +185,7 @@ def update_feed(feed):
         # assert not feed.feed_id or parsed.id == feed.feed_id
 
         update = True
-        if hasattr(parsed.feed, 'updated_parsed'):
+        if 'updated_parsed' in parsed.feed:
             # Convert feedparser's time_struct to datetime
             parsed_updated = datetime_from_struct(parsed.feed.updated_parsed)
 
@@ -205,7 +205,7 @@ def update_feed(feed):
                 # process down the road
 
                 entry_update = True
-                if hasattr(entry, 'updated_parsed'):
+                if 'updated_parsed' in entry:
                     entry_parsed_updated = \
                         datetime_from_struct(entry.updated_parsed)
 
