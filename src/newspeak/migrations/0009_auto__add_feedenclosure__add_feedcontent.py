@@ -77,7 +77,7 @@ class Migration(SchemaMigration):
             'entry_id': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'db_index': 'True'}),
             'feed': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'entries'", 'to': "orm['newspeak.Feed']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'link': ('django.db.models.fields.URLField', [], {'max_length': '255', 'db_index': 'True'}),
+            'link': ('django.db.models.fields.URLField', [], {'max_length': '330', 'db_index': 'True'}),
             'published': ('django.db.models.fields.DateTimeField', [], {}),
             'summary': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'title': ('django.db.models.fields.CharField', [], {'max_length': '1024'}),
