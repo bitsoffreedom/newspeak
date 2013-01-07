@@ -112,7 +112,8 @@ class FeedEntry(models.Model):
     title = models.CharField(_('title'), max_length=1024)
     author = models.CharField(_('author'), max_length=255, blank=True)
 
-    link = models.URLField(_('link'), db_index=True, max_length=255)
+    link = models.URLField(_('link'), db_index=True, max_length=330)
+    # max_length = 330 seems to be the max. length MySQL can handle for index
     entry_id = models.CharField(_('remote entry id'), null=True,
         db_index=True, editable=False, max_length=255)
 
