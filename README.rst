@@ -16,6 +16,14 @@ Simply perform the following steps:
 
        newspeak init
 
+#. (Optionally) Run the tests::
+
+       newspeak test newspeak
+
+   This might take a while, so go fetch a cup of coffee. If something fails,
+   please supply the output of the command `newspeak test newspeak --traceback`
+   in an [issue](https://github.com/bitsoffreedom/newspeak/issues) on GitHub.
+
 #. Create admin user and SQLite database (proper database is optional)::
 
        newspeak syncdb --migrate
@@ -37,7 +45,7 @@ Simply perform the following steps:
    (Optionally, add `-v <1|2|3>` to get more feedback on the process.)
 
 #. Look at the pretty feeds: open `http://127.0.0.1:8000/all/rss/` or
-   `http://127.0.0.1:8000/all/atom/` in your favorite feed reader. All input 
+   `http://127.0.0.1:8000/all/atom/` in your favorite feed reader. All input
    feeds will be aggregated there.
 
 Note: alternatively, the original feeds and keywords used by Bits of Freedom
