@@ -12,6 +12,9 @@ Simply perform the following steps:
        pip install -e \
          git+https://github.com/bitsoffreedom/newspeak.git@standalone#egg=newspeak
 
+   If you're smart and like to keep your Python environment clean, do this
+   in a [VirtualEnv](http://pypi.python.org/pypi/virtualenv/).
+
 #. Initialize configuration in `~/.newspeak/newspeak.conf.py`::
 
        newspeak init
