@@ -1,7 +1,7 @@
 newspeak: Standalone Django based feed aggregator
 ==================================================
 
-Gettingg started
+Getting started
 ----------------
 Getting started with newspeak is really easy thanks to David Cramer's awesome
 `logan <https://github.com/dcramer/logan>`_ for making standalone Django apps.
