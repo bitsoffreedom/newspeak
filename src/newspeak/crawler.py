@@ -294,8 +294,8 @@ def update_feed(feed):
             # Convert feedparser's time_struct to datetime
             parsed_updated = datetime_from_struct(parsed.feed.updated_parsed)
 
-            # if feed.updated and feed.updated >= parsed_updated:
-            #     update = False
+            if feed.updated and feed.updated >= parsed_updated:
+                update = False
         else:
             parsed_updated = None
 
@@ -314,8 +314,8 @@ def update_feed(feed):
                     entry_parsed_updated = \
                         datetime_from_struct(entry.updated_parsed)
 
-                    # if feed.updated and feed.updated >= entry_parsed_updated:
-                    #     entry_update = False
+                    if feed.updated and feed.updated >= entry_parsed_updated:
+                        entry_update = False
 
                 if entry_update:
                     logger.debug('Updating %s', entry.title)
