@@ -10,7 +10,6 @@ feedparser = eventlet.import_patched('feedparser')
 from eventlet.green import urllib2
 
 from lxml import html
-from lxml.html import HtmlMixin
 
 from django.conf import settings
 from django.utils.timezone import now
@@ -37,9 +36,9 @@ def extract_xpath(url, xpath):
     try:
         opener = urllib2.urlopen(url, None, timeout)
 
-	# Fetch HTTP data in one batch, as handling the 'file-like' object to
-	# lxml results in thread-locking behaviour.
-	htmldata = opener.read()
+        # Fetch HTTP data in one batch, as handling the 'file-like' object to
+        # lxml results in thread-locking behaviour.
+        htmldata = opener.read()
 
     except urllib2.HTTPError:
         logger.warning(
@@ -415,7 +414,7 @@ def update_feeds():
     for feed in pool.imap(update_feed, feed_qs):
         feed_count += 1
         logger.debug(u'Finished processing feed %s (%d/%d)',
-	    feed, feed_count, feed_total)
+        feed, feed_count, feed_total)
 
     logger.debug(u'Finished crawling succesfully. %d feeds updated',
         feed_total
