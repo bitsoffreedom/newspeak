@@ -394,19 +394,19 @@ class XPathExtractionTests(TestCase):
 
     def test_extract_pdf(self):
         """ Test extracting the PDF url from a government announcement. """
-        url = 'https://zoek.officielebekendmakingen.nl/kst-201314.html'
+        url = 'https://zoek.officielebekendmakingen.nl/kst-24095-329.html'
         xpath = "string(id('downloadPdfHyperLink')/attribute::href)"
 
         result = extract_xpath(url, xpath)
 
         # Assert the value makes sense
-        self.assertEquals(result, 'kst-201314.pdf')
+        self.assertEquals(result, 'kst-24095-329.pdf')
 
         # This should also work without string()
         xpath = "id('downloadPdfHyperLink')/attribute::href"
 
         result = extract_xpath(url, xpath)
-        self.assertEquals(result, 'kst-201314.pdf')
+        self.assertEquals(result, 'kst-24095-329.pdf')
 
         # Now make sure the returned URL is available
         pdf_url = urljoin(url, result)
