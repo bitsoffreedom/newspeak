@@ -12,6 +12,7 @@ from eventlet.green import urllib2
 from lxml import html
 from lxml.html import HtmlMixin
 
+from django.conf import settings
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
 from django.core.exceptions import ValidationError
@@ -396,11 +397,15 @@ def update_feeds():
     # List all active feeds, randomized ordering for greater concurrency
     feed_qs = Feed.objects.filter(active=True).order_by('?')
 
-    # Create a pool with 16 workers to swim in
-    pool = eventlet.GreenPool(size=16)
+    threads = settings.NEWSPEAK_THREADS
+
+    # Create a pool for workers to swim in
+    pool = eventlet.GreenPool(size=threads)
 
     for feed in pool.imap(update_feed, feed_qs):
         logger.debug('Finished processing feed %s', feed)
+
+    logger.debug('Starteed %d lightweight threads.' % threads)
 
     # Wait untill all threads are done
     pool.waitall()

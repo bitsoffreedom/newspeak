@@ -39,3 +39,6 @@ DATABASES = {
 #         'LOCATION': ['127.0.0.1:11211'],
 #     }
 # }
+
+# Number of threads
+# NEWSPEAK_THREADS = 64
