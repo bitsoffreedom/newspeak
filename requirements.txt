@@ -3,7 +3,7 @@ logan
 South
 gunicorn
 surlex
-feedparser
+feedparser>=5.1.3
 pytz
 eventlet
 mock
