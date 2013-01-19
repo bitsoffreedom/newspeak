@@ -402,10 +402,14 @@ def update_feeds():
     # Create a pool for workers to swim in
     pool = eventlet.GreenPool(size=threads)
 
+    logger.debug(u'Crawling with %d lightweight threads.', threads)
+
     for feed in pool.imap(update_feed, feed_qs):
         logger.debug(u'Finished processing feed %s', feed)
 
-    logger.debug(u'Starteed %d lightweight threads.' % threads)
+    logger.debug(u'Finished crawling succesfully. %d feeds updated',
+        feed_qs.count()
+    )
 
     # Wait untill all threads are done
     pool.waitall()
