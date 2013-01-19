@@ -146,5 +146,5 @@ LOGGING = {
 }
 
 # Default number of threads for crawling
-NEWSPEAK_THREADS = 16
+NEWSPEAK_THREADS = 4
 
