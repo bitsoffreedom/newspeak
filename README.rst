@@ -80,11 +80,6 @@ Simply perform the following steps:
 
        newspeak loaddata feeds_keywords_bof
 
-#  Perform an initial feed update in order to populate the feed data, with
-   increased verbosity (this might take a while)::
-
-       newspeak update_feeds -v
-
 #. Setup a `Cronjob <http://en.wikipedia.org/wiki/Cronjob>`_ to automatically 
    update the feed data using the `newspeak update_feeds` command. For 
    example, a cron job updating the feeds every hour could look as follows::
