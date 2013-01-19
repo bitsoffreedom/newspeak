@@ -1,7 +1,30 @@
 newspeak: Standalone Django based feed aggregator
 ==================================================
 
-Getting started
+What it does
+------------
+Newspeak is a feed aggregator with advanced features for keyword filtering
+and link content extraction, implemented as a standaloone Django application.
+
+Architecture
+------------
+Newspeak performs the following tasks (in order):
+
+#. Fetch specified RSS/Atom feeds as per the `Feed <https://github.com/bitsoffreedom/newspeak/blob/standalone/src/newspeak/models.py#L70>`_ model (in parallel).
+#. Parses the feeds using `feedparser <http://pypi.python.org/pypi/feedparser>`_.
+#. (Optionally) applies per-feed inclusive/exclusive keyword filters on the title and/or summary, based on the `KeywordFilter <https://github.com/bitsoffreedom/newspeak/blob/standalone/src/newspeak/models.py#L8>`_ model.
+#. (Optionally) extract summary data using an XPath expression from feed entry's link URL, using `lxml <http://lxml.de/>`_.
+#. (Optionally) extract enclosure information using XPath expressions from the feed entry's link URL, using `lxml <http://lxml.de/>`_.
+#. Store the resulting feed information locally in a database.
+#. Serve the aggregate of all the feed entries in a single RSS/Atom feed.
+
+The flow of feed data through the application is roughly as follows (given some example feeds and keyword filters)::
+
+    [Feed 1]-[Keyword filter 1]-[Keyword filter 2]-[XPath content extraction]-----------------------------`\
+    [Feed 2]--------------------[Keyword filter 3]-[XPath summary extraction]-[XPath content extraction ] -+--[Aggregate output feed]
+    [Feed 3]-[Keyword filter 3]-[Keyword filter 4]---------------------------------------------------------/
+
+Installing
 ----------------
 Getting started with newspeak is really easy thanks to David Cramer's awesome
 `logan <https://github.com/dcramer/logan>`_ for making standalone Django apps.
@@ -13,7 +36,7 @@ Simply perform the following steps:
          git+https://github.com/bitsoffreedom/newspeak.git@standalone#egg=newspeak
 
    If you're smart and like to keep your Python environment clean, do this
-   in a [VirtualEnv](http://pypi.python.org/pypi/virtualenv/).
+   in a `VirtualEnv <http://pypi.python.org/pypi/virtualenv/>`_.
 
 #. Initialize configuration in `~/.newspeak/newspeak.conf.py`::
 
@@ -51,11 +74,35 @@ Simply perform the following steps:
    `http://127.0.0.1:8000/all/atom/` in your favorite feed reader. All input
    feeds will be aggregated there.
 
-Note: alternatively, the original feeds and keywords used by Bits of Freedom
-are contained in a fixture called `feeds_keywords_bof.json`. This fixture
-can be loaded using::
+   Alternatively, the original feeds and keywords used by Bits of Freedom
+   are contained in a fixture called `feeds_keywords_bof.json`. This fixture
+   can be loaded using::
 
-    newspeak loaddata feeds_keywords_bof
+       newspeak loaddata feeds_keywords_bof
 
-After this running `update_feeds` should give a nice idea of what this package
-is capable of.
+#  Perform an initial feed update in order to populate the feed data, with
+   increased verbosity (this might take a while)::
+
+       newspeak update_feeds -v
+
+#. Setup a `Cronjob <http://en.wikipedia.org/wiki/Cronjob>`_ to automatically 
+   update the feed data using the `newspeak update_feeds` command. For 
+   example, a cron job updating the feeds every hour could look as follows::
+
+       0 * * * *  <full_path_to_>/newspeak update_feeds
+
+Upgrading
+----------
+#. Run the PIP installation command again::
+
+       pip install -e \
+         git+https://github.com/bitsoffreedom/newspeak.git@standalone#egg=newspeak
+
+#. (Optionally) Run the tests::
+
+       newspeak test newspeak
+
+#. Apply any database migrations::
+
+       newspeak migrate
+
