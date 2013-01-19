@@ -29,7 +29,7 @@ def extract_xpath(url, xpath):
     HTML/text representation of its contents, with all links made absolute.
     """
     # Fetch and parse
-    logger.debug('Fetching and parsing %s', url)
+    logger.debug(u'Fetching and parsing %s', url)
 
     # Use urllib2 directly for enabled SSL support (LXML doesn't by default)
     timeout = 10
@@ -38,7 +38,7 @@ def extract_xpath(url, xpath):
         opener = urllib2.urlopen(url, None, timeout)
     except urllib2.HTTPError:
         logger.warning(
-            'HTTP during XPath extraction for %s, returning emtpy string.',
+            u'HTTP during XPath extraction for %s, returning emtpy string.',
             url
         )
 
@@ -48,12 +48,12 @@ def extract_xpath(url, xpath):
     parsed = html.parse(opener)
 
     # Execute XPath
-    logger.debug('Resolving XPath %s for %s', xpath, url)
+    logger.debug(u'Resolving XPath %s for %s', xpath, url)
     result = parsed.xpath(xpath)
 
     if not result:
         logger.warning(
-            'XPath %s did not return a value for %s, returning empty string.',
+            u'XPath %s did not return a value for %s, returning empty string.',
             xpath, url)
 
         return ''
@@ -65,8 +65,8 @@ def extract_xpath(url, xpath):
     # The result should ideally only contain a single element
     if len(result) > 1:
         logger.warning(
-            'XPath %s returned multiple elements for %s, ignoring all but '
-            ' the first.'
+            u'XPath %s returned multiple elements for %s, ignoring all but '
+            u' the first.'
         )
 
     # Take the first element in the XPath result set
@@ -94,7 +94,7 @@ def filter_entry(feed, entry):
     is to be included, False if the entry is to be discarded.
     """
     for feed_filter in feed.filters.filter(active=True):
-        logger.debug('Applying filter %s to entry %s',
+        logger.debug(u'Applying filter %s to entry %s',
             feed_filter, entry.title
         )
 
@@ -142,20 +142,20 @@ def update_entry(feed, entry):
     # Consider whether or not to discard the item
     if not filter_entry(feed, entry):
         # Entry to be discarded - stop further processing
-        logger.debug('Discarding entry %s', entry.title)
+        logger.debug(u'Discarding entry %s', entry.title)
 
         # Possible problem: we might want to delete existing entries now
         # that they are filtered. Then again: we might not.
         return
 
     if 'id' in entry:
-        logger.debug('Attempt matching by entry ID %s', entry.id)
+        logger.debug(u'Attempt matching by entry ID %s', entry.id)
 
         db_entry = get_or_create_object(
             FeedEntry, feed=feed, entry_id=entry.id)
 
     elif 'link' in entry:
-        logger.debug('Attempt matching by entry link %s', entry.link)
+        logger.debug(u'Attempt matching by entry link %s', entry.link)
 
         db_entry = get_or_create_object(
             FeedEntry, feed=feed, entry_id=None, link=entry.link)
@@ -181,7 +181,7 @@ def update_entry(feed, entry):
             # Some value was found, add it to the entry
             db_entry.summary = extracted_summary
 
-            logger.debug('Extracted summary for %s from %s',
+            logger.debug(u'Extracted summary for %s from %s',
                 db_entry, entry.link
             )
 
@@ -202,7 +202,7 @@ def update_entry(feed, entry):
             )
             db_content.save()
 
-        logger.debug('%d contents added to entry %s',
+        logger.debug(u'%d contents added to entry %s',
             len(entry.content), db_entry)
 
     # Feed enclosures
@@ -218,7 +218,7 @@ def update_entry(feed, entry):
             )
             db_enclosure.save()
 
-        logger.debug('%d enclosures added to entry %s',
+        logger.debug(u'%d enclosures added to entry %s',
             len(entry.enclosures), db_entry)
 
     # Extraction of enclosures
@@ -247,7 +247,7 @@ def update_entry(feed, entry):
             # All went fine, saving
             db_enclosure.save()
 
-            logger.debug('Extracted enclosure %s for %s from %s',
+            logger.debug(u'Extracted enclosure %s for %s from %s',
                 db_enclosure, db_entry, entry.link
             )
 
@@ -255,7 +255,7 @@ def update_entry(feed, entry):
 def update_feed(feed):
     """ Update a single feed. """
 
-    logger.info('Updating feed %s', feed)
+    logger.info(u'Updating feed %s', feed)
 
     try:
         # Fetch and parse the feed
@@ -265,13 +265,13 @@ def update_feed(feed):
 
         # Data not changed
         if parsed.status == 304:
-            logger.debug('Feed %s not changed, aborting', feed)
+            logger.debug(u'Feed %s not changed, aborting', feed)
 
             return feed
 
         # Feed gone, disable crawling
         if parsed.status == 410:
-            logger.error('Feed %s gone, disabling', feed)
+            logger.error(u'Feed %s gone, disabling', feed)
 
             feed.error_state = True
             feed.error_description = _(
@@ -285,7 +285,7 @@ def update_feed(feed):
         # Permanent redirect, update URL
         if parsed.status == 301:
             logger.warning(
-                'Feed %s has permanent redirect, updating URL to %s',
+                u'Feed %s has permanent redirect, updating URL to %s',
                 feed, parsed.href)
 
             feed.url = parsed.href
@@ -293,7 +293,7 @@ def update_feed(feed):
         # Check for well-formedness
         if parsed.bozo:
             logger.warning(
-                'Feed data was not well-formed. Error: %s',
+                u'Feed data was not well-formed. Error: %s',
                 unicode(parsed.bozo_exception)
             )
 
@@ -312,7 +312,7 @@ def update_feed(feed):
 
         # Only update if newer
         if update:
-            logger.debug('Updating feed %s', feed)
+            logger.debug(u'Updating feed %s', feed)
 
             # Update all entries
             for entry in parsed.entries:
@@ -329,10 +329,10 @@ def update_feed(feed):
                         entry_update = False
 
                 if entry_update:
-                    logger.debug('Updating %s', entry.title)
+                    logger.debug(u'Updating %s', entry.title)
                     update_entry(feed, entry)
                 else:
-                    logger.debug('Not updating %s', entry.title)
+                    logger.debug(u'Not updating %s', entry.title)
 
             # Make sure the feed ID is synchronized
             # feed.feed_id = parsed.id
@@ -348,7 +348,7 @@ def update_feed(feed):
                 try:
                     latest = updated_entries.order_by('-updated')[0]
 
-                    logger.debug('Latest updated entry `%s` at `%s`',
+                    logger.debug(u'Latest updated entry `%s` at `%s`',
                         latest, latest.updated)
 
                     feed.updated = latest.updated
@@ -374,7 +374,7 @@ def update_feed(feed):
             feed.save()
 
         else:
-            logger.debug('Not updating feed %s', feed)
+            logger.debug(u'Not updating feed %s', feed)
 
     except Exception as e:
         # Log any exception and pass the status on to the database
@@ -392,7 +392,7 @@ def update_feed(feed):
 def update_feeds():
     """ Update all feeds. """
 
-    logger.info('Updating all feeds')
+    logger.info(u'Updating all feeds')
 
     # List all active feeds, randomized ordering for greater concurrency
     feed_qs = Feed.objects.filter(active=True).order_by('?')
@@ -403,9 +403,9 @@ def update_feeds():
     pool = eventlet.GreenPool(size=threads)
 
     for feed in pool.imap(update_feed, feed_qs):
-        logger.debug('Finished processing feed %s', feed)
+        logger.debug(u'Finished processing feed %s', feed)
 
-    logger.debug('Starteed %d lightweight threads.' % threads)
+    logger.debug(u'Starteed %d lightweight threads.' % threads)
 
     # Wait untill all threads are done
     pool.waitall()
