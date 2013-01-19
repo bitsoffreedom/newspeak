@@ -48,7 +48,7 @@ Simply perform the following steps:
 
    This might take a while, so go fetch a cup of coffee. If something fails,
    please supply the output of the command `newspeak test newspeak --traceback`
-   in an [issue](https://github.com/bitsoffreedom/newspeak/issues) on GitHub.
+   in an `issue <https://github.com/bitsoffreedom/newspeak/issues>`_ on GitHub.
 
 #. Create admin user and SQLite database (proper database is optional)::
 
