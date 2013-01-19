@@ -31,7 +31,17 @@ def extract_xpath(url, xpath):
     logger.debug('Fetching and parsing %s', url)
 
     # Use urllib2 directly for enabled SSL support (LXML doesn't by default)
-    opener = urllib2.urlopen(url)
+    timeout = 10
+
+    try:
+        opener = urllib2.urlopen(url, None, timeout)
+    except urllib2.HTTPError:
+        logger.warning(
+            'HTTP during XPath extraction for %s, returning emtpy string.',
+            url
+        )
+
+        return ''
 
     # Parse
     parsed = html.parse(opener)
