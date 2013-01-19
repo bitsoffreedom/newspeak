@@ -29,13 +29,18 @@ def extract_xpath(url, xpath):
     HTML/text representation of its contents, with all links made absolute.
     """
     # Fetch and parse
-    logger.debug(u'Fetching and parsing %s', url)
+    logger.debug(u'Fetching %s', url)
 
     # Use urllib2 directly for enabled SSL support (LXML doesn't by default)
     timeout = 10
 
     try:
         opener = urllib2.urlopen(url, None, timeout)
+
+	# Fetch HTTP data in one batch, as handling the 'file-like' object to
+	# lxml results in thread-locking behaviour.
+	htmldata = opener.read()
+
     except urllib2.HTTPError:
         logger.warning(
             u'HTTP during XPath extraction for %s, returning emtpy string.',
@@ -45,7 +50,8 @@ def extract_xpath(url, xpath):
         return ''
 
     # Parse
-    parsed = html.parse(opener)
+    logger.debug(u'Parsing HTML for %s', url)
+    parsed = html.fromstring(htmldata)
 
     # Execute XPath
     logger.debug(u'Resolving XPath %s for %s', xpath, url)
@@ -77,7 +83,7 @@ def extract_xpath(url, xpath):
         return result
 
     # From now on, we will assume it is some HTML element
-    assert isinstance(result, HtmlMixin)
+    assert isinstance(result, html.HtmlMixin)
 
     # Make all links in the result absolute
     result.make_links_absolute()
@@ -402,13 +408,17 @@ def update_feeds():
     # Create a pool for workers to swim in
     pool = eventlet.GreenPool(size=threads)
 
-    logger.debug(u'Crawling with %d lightweight threads.', threads)
+    feed_total = feed_qs.count()
+    feed_count = 0
+    logger.debug(u'Crawling %d feeds with %d lightweight threads.', feed_total, threads)
 
     for feed in pool.imap(update_feed, feed_qs):
-        logger.debug(u'Finished processing feed %s', feed)
+        feed_count += 1
+        logger.debug(u'Finished processing feed %s (%d/%d)',
+	    feed, feed_count, feed_total)
 
     logger.debug(u'Finished crawling succesfully. %d feeds updated',
-        feed_qs.count()
+        feed_total
     )
 
     # Wait untill all threads are done
