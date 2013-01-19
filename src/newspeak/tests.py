@@ -392,7 +392,7 @@ class EntryFilterTests(TestCase):
 class XPathExtractionTests(TestCase):
     """ Test extraction of XPath expressions from URL's. """
 
-    def test_extract_pdf(self):
+    def test_extract_pdf_bekendmakingen(self):
         """ Test extracting the PDF url from a government announcement. """
         url = 'https://zoek.officielebekendmakingen.nl/kst-24095-329.html'
         xpath = "string(id('downloadPdfHyperLink')/attribute::href)"
@@ -407,6 +407,48 @@ class XPathExtractionTests(TestCase):
 
         result = extract_xpath(url, xpath)
         self.assertEquals(result, 'kst-24095-329.pdf')
+
+        # Now make sure the returned URL is available
+        pdf_url = urljoin(url, result)
+        resource = urllib2.urlopen(pdf_url)
+        info = resource.info()
+
+        self.assertEquals(resource.getcode(), 200)
+        self.assertEquals(info.gettype(), 'application/pdf')
+
+    def test_extract_pdf_aivd(self):
+        """ Test extracting the PDF url from an AIVD announcement. """
+        url = 'https://www.aivd.nl/actueel/parlementaire/@2846/brief-minister-bzk-1/'
+        xpath = "id('content')/div/ul/li[@class='download']/a/attribute::href"
+
+        result_url = \
+            '/publish/pages/2374/reactie_minister_bzk_op_ctivd-rapport_ambtsberichten.pdf'
+
+        result = extract_xpath(url, xpath)
+
+        # Assert the value makes sense
+        self.assertEquals(result, result_url)
+
+        # Now make sure the returned URL is available
+        pdf_url = urljoin(url, result)
+        resource = urllib2.urlopen(pdf_url)
+        info = resource.info()
+
+        self.assertEquals(resource.getcode(), 200)
+        self.assertEquals(info.gettype(), 'application/pdf')
+
+    def test_extract_pdf_rijksoverheid(self):
+        """ Test extracting the PDF url from an Rijksoverheid announcement. """
+        url = 'http://www.rijksoverheid.nl/documenten-en-publicaties/rapporten/2012/09/25/eindrapport-audit-ciot-2011.html'
+        xpath = "id('content-column')/descendant::div[@class='download-chunk']/descendant::a/attribute::href"
+
+        result_url = \
+            '/bestanden/documenten-en-publicaties/rapporten/2012/09/25/eindrapport-audit-ciot-2011/eindrapport-audit-ciot-2011.pdf'
+
+        result = extract_xpath(url, xpath)
+
+        # Assert the value makes sense
+        self.assertEquals(result, result_url)
 
         # Now make sure the returned URL is available
         pdf_url = urljoin(url, result)
