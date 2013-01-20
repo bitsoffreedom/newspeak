@@ -31,7 +31,7 @@ def extract_xpath(url, xpath):
     logger.debug(u'Fetching %s', url)
 
     # Use urllib2 directly for enabled SSL support (LXML doesn't by default)
-    timeout = 10
+    timeout = 30
 
     try:
         opener = urllib2.urlopen(url, None, timeout)
