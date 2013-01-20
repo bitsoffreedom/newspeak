@@ -165,12 +165,26 @@ class FetchTests(TestCase):
 
         # Test requesting the aggregate RSS and Atom feed
         response = self.client.get(self.rss_url)
-        parsed = feedparser.parse(response.content)
-        self.assertEquals(FeedEntry.objects.count(), len(parsed.entries))
+        parsed1 = feedparser.parse(response.content)
+        self.assertEquals(FeedEntry.objects.count(), len(parsed1.entries))
 
         response = self.client.get(self.atom_url)
-        parsed = feedparser.parse(response.content)
-        self.assertEquals(FeedEntry.objects.count(), len(parsed.entries))
+        parsed2 = feedparser.parse(response.content)
+        self.assertEquals(FeedEntry.objects.count(), len(parsed2.entries))
+
+        # Make sure at least one entry has an enclosure in both formats
+        enclosures = False
+        content = False
+        for parsed in [parsed1, parsed2]:
+            for entry in parsed.entries:
+                if 'enclosures' in entry and len(entry.enclosures):
+                    enclosures = True
+
+                if 'content' in entry and len(entry.content):
+                    content = True
+
+            self.assertTrue(enclosures)
+            self.assertTrue(content)
 
 
 class BofFeedsTests(TestCase):
