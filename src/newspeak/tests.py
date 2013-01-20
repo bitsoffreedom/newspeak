@@ -135,11 +135,13 @@ class FetchTests(TestCase):
         """ Test multiple feed aggregation. """
 
         # NRC
-        feed1 = Feed(url='http://www.nrc.nl/rss.php')
+        url1 = 'http://www.nrc.nl/rss.php'
+        feed1 = Feed(url=url1)
         feed1.save()
 
         # NOS
-        feed2 = Feed(url='http://feeds.nos.nl/nospodcastbuitenland')
+        url2 = 'http://feeds.nos.nl/nospodcastbuitenland'
+        feed2 = Feed(url=url2)
         feed2.save()
 
         # Assert entries are present
@@ -173,10 +175,20 @@ class FetchTests(TestCase):
         self.assertEquals(FeedEntry.objects.count(), len(parsed2.entries))
 
         # Make sure at least one entry has an enclosure in both formats
+        # Also, check the source reference for each entry
         enclosures = False
         content = False
         for parsed in [parsed1, parsed2]:
             for entry in parsed.entries:
+                # Assert for presence of source element
+                self.assertIn('source', entry)
+                self.assertIn('title', entry.source)
+                self.assertTrue(entry.source.title)
+
+                self.assertIn('href', entry.source)
+                self.assertIn(entry.source.href, [url1, url2])
+
+                # At least one should have an enclosure or content (for now)
                 if 'enclosures' in entry and len(entry.enclosures):
                     enclosures = True
 

@@ -78,6 +78,9 @@ class NewspeakFeedMixin(object):
             value=self.item_content_value(obj),
             mime_type=self.item_content_mime_type(obj),
             language=self.item_content_language(obj)
+        ), source=Source(
+            title=self.item_source_title(obj),
+            link=self.item_source_link(obj)
         ))
 
     # Content: for now, render just the first content element
@@ -100,7 +103,11 @@ class NewspeakFeedMixin(object):
             return None
 
     # Source
-    # To be Done
+    def item_source_title(self, obj):
+        return obj.feed.title
+
+    def item_source_link(self, obj):
+        return obj.feed.url
 
 
 class Content(object):
@@ -112,6 +119,14 @@ class Content(object):
         "All args are expected to be Python Unicode objects"
         self.value, self.mime_type, self.language = \
             value, mime_type, language
+
+
+class Source(object):
+    """
+    Source feed.
+    """
+    def __init__(self, title, link):
+        self.title, self.link = title, link
 
 
 class ExtendedRSSFeed(Rss201rev2Feed):
@@ -133,6 +148,12 @@ class ExtendedRSSFeed(Rss201rev2Feed):
                 'content:encoded', item['content'].value
             )
 
+        # Source link
+        if item['source'] is not None:
+            handler.addQuickElement(
+                'source', item['source'].title, {'url': item['source'].link}
+            )
+
 
 class ExtendedAtomFeed(Atom1Feed):
     """ Atom feed with extensions. """
@@ -142,10 +163,24 @@ class ExtendedAtomFeed(Atom1Feed):
 
         # Content
         if item['content'] is not None:
-            handler.addQuickElement("content", '',
-                {"value": item['content'].value,
-                 "mime_type": item['content'].mime_type,
-                 "language": item['content'].language})
+            attrs = {}
+
+            if item['content'].mime_type:
+                attrs.update({'mime_type': item['content'].mime_type})
+
+            if item['content'].language:
+                attrs.update({'language': item['content'].language})
+
+            handler.addQuickElement("content", item['content'].value, attrs)
+
+        # Source link
+        if item['source'] is not None:
+            handler.startElement('source', {})
+
+            handler.addQuickElement('title', item['source'].title)
+            handler.addQuickElement('url', item['source'].link)
+
+            handler.endElement('source')
 
 
 class NewspeakRSSFeed(NewspeakFeedMixin, Feed):
