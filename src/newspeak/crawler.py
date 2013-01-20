@@ -42,7 +42,7 @@ def extract_xpath(url, xpath):
 
     except urllib2.HTTPError:
         logger.warning(
-            u'HTTP during XPath extraction for %s, returning emtpy string.',
+            u'HTTP Error during XPath extraction for %s, returning emtpy string.',
             url
         )
 
