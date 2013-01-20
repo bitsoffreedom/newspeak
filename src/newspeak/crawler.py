@@ -233,28 +233,37 @@ def update_entry(feed, entry):
         # Make the resulting URL absolute
         extracted_href = urljoin(entry.link, extracted_href)
 
-        db_enclosure = FeedEnclosure(
-            entry=db_entry,
-            href=extracted_href,
-            length=0,
-            mime_type=feed.enclosure_mime_type
-        )
+        # Only add if an enclosure with the same URL does not
+        # already exist
+        if FeedEnclosure.objects.filter(href=extracted_href).exists():
+            logger.debug(
+                u'Extracted enclosure with href \'%s\' already exists, not saving.',
+                extracted_href
+            )
 
-        # Validate the results - the URL might be invalid
-        try:
-            db_enclosure.full_clean()
+        else:
+            db_enclosure = FeedEnclosure(
+                entry=db_entry,
+                href=extracted_href,
+                length=0,
+                mime_type=feed.enclosure_mime_type
+            )
 
             # Validate the results - the URL might be invalid
             try:
                 db_enclosure.full_clean()
 
-        else:
-            # All went fine, saving
-            db_enclosure.save()
+            except ValidationError:
+                # Log the exception, don't save
+                logger.exception(u'Error validating enclosure data.')
 
-            logger.debug(u'Extracted enclosure %s for %s from %s',
-                db_enclosure, db_entry, entry.link
-            )
+            else:
+                # All went fine, saving
+                db_enclosure.save()
+
+                logger.debug(u'Saved extracted enclosure %s for %s from %s',
+                    db_enclosure, db_entry, entry.link
+                )
 
 
 def update_feed(feed):
