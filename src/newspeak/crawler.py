@@ -40,9 +40,9 @@ def extract_xpath(url, xpath):
         # lxml results in thread-locking behaviour.
         htmldata = opener.read()
 
-    except urllib2.HTTPError:
-        logger.warning(
-            u'HTTP Error during XPath extraction for %s, returning emtpy string.',
+    except urllib2.URLError, urllib2.HTTPError:
+        # These type of errors are non-fatal - but *should* be logged.
+        logger.exception(u'HTTP Error during XPath extraction for %s, returning emtpy string.',
             url
         )
 
@@ -244,9 +244,9 @@ def update_entry(feed, entry):
         try:
             db_enclosure.full_clean()
 
-        except ValidationError as e:
-            # Log the exception, don't save
-            logger.exception(e)
+            # Validate the results - the URL might be invalid
+            try:
+                db_enclosure.full_clean()
 
         else:
             # All went fine, saving
@@ -388,7 +388,7 @@ def update_feed(feed):
         feed.error_date = now()
         feed.save()
 
-        logger.exception(e)
+        logger.exception(u'Exception while updating feed %s', feed)
 
     finally:
         return feed
