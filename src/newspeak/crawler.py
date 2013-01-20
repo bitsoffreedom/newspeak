@@ -85,7 +85,12 @@ def extract_xpath(url, xpath):
     assert isinstance(result, html.HtmlMixin)
 
     # Make all links in the result absolute
-    result.make_links_absolute()
+    try:
+        result.make_links_absolute()
+    except TypeError as e:
+        # Sometimes, this method raises a TypeError
+        # No base_url given, and the document has no base_url
+        logger.exception(e)
 
     # Turn the result into a string
     result = html.tostring(result)
