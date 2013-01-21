@@ -1,6 +1,9 @@
 newspeak: Standalone Django based feed aggregator
 ==================================================
 
+.. image:: https://secure.travis-ci.org/bitsoffreedom/newspeak.png?branch=standalone
+    :target: http://travis-ci.org/bitsoffreedom/newspeak
+
 What it does
 ------------
 Newspeak is a feed aggregator with advanced features for keyword filtering
@@ -80,8 +83,8 @@ Simply perform the following steps:
 
        newspeak loaddata feeds_keywords_bof
 
-#. Setup a `Cronjob <http://en.wikipedia.org/wiki/Cronjob>`_ to automatically 
-   update the feed data using the `newspeak update_feeds` command. For 
+#. Setup a `Cronjob <http://en.wikipedia.org/wiki/Cronjob>`_ to automatically
+   update the feed data using the `newspeak update_feeds` command. For
    example, a cron job updating the feeds every hour could look as follows::
 
        0 * * * *  <full_path_to_>/newspeak update_feeds
