@@ -32,11 +32,6 @@ setup(
                  'Operating System :: OS Independent',
                  'Programming Language :: Python',
                  'Topic :: Utilities'],
-    test_suite='setuptest.setuptest.SetupTestSuite',
-    tests_require=(
-        'django-setuptest',
-        'argparse',  # apparently needed by django-setuptest on python 2.6
-    ),
     entry_points={
         'console_scripts': [
             'newspeak = newspeak.runner:main',
