@@ -1,6 +1,7 @@
 from django.contrib.syndication.views import Feed
 from django.utils.feedgenerator import Atom1Feed, Rss201rev2Feed
 
+from django.conf import settings
 
 from .models import FeedEntry
 
@@ -8,17 +9,13 @@ from .models import FeedEntry
 class NewspeakFeedMixin(object):
     """ Aggregate RSS Feed for Newspeak. """
 
-    title = "Newspeak van de Nederlandse overheid"
-    link = "/"
-    description = (
-        'De Nederlandse overheid en het parlement publiceren veel documenten,'
-        ' zoals kamerstukken, persberichten en brochures. De Newspeak RSS '
-        'feed haalt de krenten uit de pap.'
-    )
-    author_name = 'Rejo Zenger'
-    author_email = 'rejo@zenger.nl'
-    author_link = \
-        'https://rejo.zenger.nl/inzicht/newspeak-van-de-nederlandse-overheid/'
+    # Get feed metadata from Django settings
+    title = settings.NEWSPEAK_METADATA['title']
+    link = settings.NEWSPEAK_METADATA['link']
+    description = settings.NEWSPEAK_METADATA['description']
+    author_name = settings.NEWSPEAK_METADATA['author_name']
+    author_email = settings.NEWSPEAK_METADATA['author_email']
+    author_link = settings.NEWSPEAK_METADATA['author_link']
 
     def items(self):
         """ Return a queryset of all feed items to display. """

@@ -155,6 +155,5 @@ LOGGING = {
     }
 }
 
-# Default number of threads for crawling
-NEWSPEAK_THREADS = 4
-
+# Import newspeak-specific default settings
+from .newspeak import *

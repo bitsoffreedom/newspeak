@@ -45,6 +45,18 @@ Simply perform the following steps:
 
        newspeak init
 
+#. Perform (optional) configuration by editing the settings file. Because
+   Newspeak is based on Django, all
+   `available Django settings <https://docs.djangoproject.com/en/1.4/ref/settings/>`_
+   can be used. Furthermore, there are some Newspeak-specific settings:
+
+   * `NEWSPEAK_THREADS`: The number of (lightweight) threads used for crawling
+     feed data.
+   * `NEWSPEAK_METADATA`: Metadata used in the generated output feed.
+
+   For a more thorough description and an example of these settings, please
+   have a look at the initial settings file generated in the previous step.
+
 #. (Optionally) Run the tests::
 
        newspeak test newspeak
