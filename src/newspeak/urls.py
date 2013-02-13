@@ -1,5 +1,7 @@
 from django.conf.urls import patterns, url
 
+from django.views.generic.base import RedirectView
+
 from surlex.dj import surl
 
 from .feeds import NewspeakRSSFeed, NewspeakAtomFeed
@@ -10,11 +12,11 @@ urlpatterns = patterns('',
     #     name='newspeak_home'
     # ),)
 
-    # Static redirect to the RSS feed, until we have a 
+    # Static redirect to the RSS feed, until we have a
     # page to show here.
-    (r'^$', 'django.views.generic.simple.redirect_to',
-        {'url': '/all/rss/', 'permanent': False}
-    ),
+    url(r'^$', RedirectView.as_view(
+        url='/all/rss/', permanent=False
+    )),
 
     url(r'^all/rss/$', NewspeakRSSFeed(), name='rss_all'),
     url(r'^all/atom/$', NewspeakAtomFeed(), name='atom_all'),
