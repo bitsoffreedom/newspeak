@@ -13,6 +13,8 @@ from .crawler import (
     update_feeds, filter_entry, keywords_to_regex, extract_xpath
 )
 
+from .utils import parse_url
+
 
 class FetchTests(TestCase):
     """ Tests relating to fetching and parsing of feeds. """
@@ -460,16 +462,19 @@ class XPathExtractionTests(TestCase):
         url = 'https://zoek.officielebekendmakingen.nl/kst-24095-329.html'
         xpath = "string(id('downloadPdfHyperLink')/attribute::href)"
 
-        result = extract_xpath(url, xpath)
+        parsed = parse_url(url)
+        result = extract_xpath(parsed, xpath)
 
         # Assert the value makes sense
-        self.assertEquals(result, 'kst-24095-329.pdf')
+        self.assertEquals(result,
+            'https://zoek.officielebekendmakingen.nl/kst-24095-329.pdf')
 
         # This should also work without string()
         xpath = "id('downloadPdfHyperLink')/attribute::href"
 
-        result = extract_xpath(url, xpath)
-        self.assertEquals(result, 'kst-24095-329.pdf')
+        result = extract_xpath(parsed, xpath)
+        self.assertEquals(result,
+            'https://zoek.officielebekendmakingen.nl/kst-24095-329.pdf')
 
         # Now make sure the returned URL is available
         pdf_url = urljoin(url, result)
@@ -485,10 +490,13 @@ class XPathExtractionTests(TestCase):
         url = 'https://www.aivd.nl/actueel/parlementaire/@2846/brief-minister-bzk-1/'
         xpath = "id('content')/div/ul/li[@class='download']/a/attribute::href"
 
-        result_url = \
-            '/publish/pages/2374/reactie_minister_bzk_op_ctivd-rapport_ambtsberichten.pdf'
+        result_url = (
+            'https://www.aivd.nl/publish/pages/2374/reactie_minister_bzk_'
+            'op_ctivd-rapport_ambtsberichten.pdf'
+        )
 
-        result = extract_xpath(url, xpath)
+        parsed = parse_url(url)
+        result = extract_xpath(parsed, xpath)
 
         # Assert the value makes sense
         self.assertEquals(result, result_url)
@@ -504,13 +512,22 @@ class XPathExtractionTests(TestCase):
     def test_extract_pdf_rijksoverheid(self):
         """ Test extracting the PDF url from a Rijksoverheid announcement. """
 
-        url = 'http://www.rijksoverheid.nl/documenten-en-publicaties/rapporten/2012/09/25/eindrapport-audit-ciot-2011.html'
-        xpath = "id('content-column')/descendant::div[@class='download-chunk']/descendant::a/attribute::href"
+        url = (
+            'http://www.rijksoverheid.nl/documenten-en-publicaties/rapporten/'
+            '2012/09/25/eindrapport-audit-ciot-2011.html'
+        )
+        xpath = (
+            "id('content-column')/descendant::div[@class='download-chunk']/"
+            "descendant::a/attribute::href"
+        )
 
-        result_url = \
-            '/bestanden/documenten-en-publicaties/rapporten/2012/09/25/eindrapport-audit-ciot-2011/eindrapport-audit-ciot-2011.pdf'
+        result_url = (
+            'http://www.rijksoverheid.nl/bestanden/documenten-en-publicaties/'
+            'rapporten/2012/09/25/eindrapport-audit-ciot-2011/eindrapport-audit-ciot-2011.pdf'
+        )
 
-        result = extract_xpath(url, xpath)
+        parsed = parse_url(url)
+        result = extract_xpath(parsed, xpath)
 
         # Assert the value makes sense
         self.assertEquals(result, result_url)
@@ -529,7 +546,8 @@ class XPathExtractionTests(TestCase):
         url = 'https://zoek.officielebekendmakingen.nl/kst-26643-260.html'
         xpath = "id('main-column')"
 
-        result = extract_xpath(url, xpath)
+        parsed = parse_url(url)
+        result = extract_xpath(parsed, xpath)
 
         # Assert presence of some text fragment
         self.assertIn(

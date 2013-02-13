@@ -6,6 +6,10 @@ import re
 from time import mktime
 from datetime import datetime
 
+from lxml import html
+
+from eventlet.green import urllib2
+
 from django.utils import timezone
 from django.utils.functional import memoize
 
@@ -64,3 +68,53 @@ def keywords_to_regex(keywords):
 # Cache the compiled regular expressions - never compile the same twice
 _regex_cache = {}
 keywords_to_regex = memoize(keywords_to_regex, _regex_cache, 1)
+
+
+def fetch_url(url):
+    """ Fetches a URL and returns contents - use opener to support HTTPS. """
+
+    # Fetch and parse
+    logger.debug(u'Fetching %s', url)
+
+    # Use urllib2 directly for enabled SSL support (LXML doesn't by default)
+    timeout = 30
+
+    try:
+        opener = urllib2.urlopen(url, None, timeout)
+
+        # Fetch HTTP data in one batch, as handling the 'file-like' object to
+        # lxml results in thread-locking behaviour.
+        htmldata = opener.read()
+
+    except urllib2.URLError, urllib2.HTTPError:
+        # These type of errors are non-fatal - but *should* be logged.
+        logger.exception(u'HTTP Error for %s, returning emtpy string.',
+            url
+        )
+
+        return None
+
+    return htmldata
+
+
+def parse_url(url):
+    """
+    Return lxml-parsed HTML for given URL or None when HTTP request failed.
+
+    Uses urllib2 directly and fetches as string before parsing as to prevent
+    thread locking issues.
+    """
+    htmldata = fetch_url(url)
+
+    # No data, return None
+    if not htmldata:
+        return None
+
+    # Parse
+    logger.debug(u'Parsing HTML for %s', url)
+    parsed = html.fromstring(htmldata, base_url=url)
+
+    # Make all links in the result absolute
+    parsed.make_links_absolute(url)
+
+    return parsed

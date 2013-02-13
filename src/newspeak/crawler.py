@@ -7,7 +7,6 @@ import eventlet
 
 # Use Eventlet for parallel processing of HTTP requests
 feedparser = eventlet.import_patched('feedparser')
-from eventlet.green import urllib2
 
 from lxml import html
 
@@ -18,48 +17,33 @@ from django.core.exceptions import ValidationError
 
 from .models import Feed, FeedEntry, FeedContent, FeedEnclosure
 from .utils import (
-    datetime_from_struct, get_or_create_object, keywords_to_regex
+    datetime_from_struct, get_or_create_object, keywords_to_regex, parse_url
 )
 
 
-def extract_xpath(url, xpath):
+def extract_xpath(parsed, xpath):
     """
     Extract XPath expression from the HTML at specified URL and return the
     HTML/text representation of its contents, with all links made absolute.
+
+    If parsing fails or the XPath does not resolve an empty string is returned.
     """
-    # Fetch and parse
-    logger.debug(u'Fetching %s', url)
 
-    # Use urllib2 directly for enabled SSL support (LXML doesn't by default)
-    timeout = 30
-
-    try:
-        opener = urllib2.urlopen(url, None, timeout)
-
-        # Fetch HTTP data in one batch, as handling the 'file-like' object to
-        # lxml results in thread-locking behaviour.
-        htmldata = opener.read()
-
-    except urllib2.URLError, urllib2.HTTPError:
-        # These type of errors are non-fatal - but *should* be logged.
-        logger.exception(u'HTTP Error during XPath extraction for %s, returning emtpy string.',
-            url
+    if parsed is None:
+        logger.warning(
+            u'XPath %s could not be executed because no parsed HTML is available.', xpath
         )
 
         return ''
 
-    # Parse
-    logger.debug(u'Parsing HTML for %s', url)
-    parsed = html.fromstring(htmldata, base_url=url)
-
     # Execute XPath
-    logger.debug(u'Resolving XPath %s for %s', xpath, url)
+    logger.debug(u'Resolving XPath %s', xpath)
     result = parsed.xpath(xpath)
 
     if not result:
         logger.warning(
-            u'XPath %s did not return a value for %s, returning empty string.',
-            xpath, url)
+            u'XPath %s did not return a value, returning empty string.', xpath
+        )
 
         return ''
 
@@ -83,9 +67,6 @@ def extract_xpath(url, xpath):
 
     # From now on, we will assume it is some HTML element
     assert isinstance(result, html.HtmlMixin)
-
-    # Make all links in the result absolute
-    result.make_links_absolute(url)
 
     # Turn the result into a string
     result = html.tostring(result)
@@ -182,9 +163,13 @@ def update_entry(feed, entry):
     if raw_updated_parsed:
         db_entry.updated = datetime_from_struct(raw_updated_parsed)
 
+    # Determine whether to perform extraction and if so: only perform it once
+    if feed.summary_xpath or feed.enclosure_xpath or feed.content_xpath:
+        parsed = parse_url(entry.link)
+
     # Extraction of summary
     if feed.summary_xpath and (not db_entry.summary or feed.summary_override):
-        extracted_summary = extract_xpath(entry.link, feed.summary_xpath)
+        extracted_summary = extract_xpath(parsed, feed.summary_xpath)
 
         if extracted_summary:
             # Some value was found, add it to the entry
@@ -245,7 +230,7 @@ def update_entry(feed, entry):
 
     # Extraction of content
     if feed.content_xpath:
-        extracted_content = extract_xpath(entry.link, feed.content_xpath)
+        extracted_content = extract_xpath(parsed, feed.content_xpath)
 
         if extracted_content:
 
@@ -278,7 +263,7 @@ def update_entry(feed, entry):
 
     # Extraction of enclosures
     if feed.enclosure_xpath:
-        extracted_href = extract_xpath(entry.link, feed.enclosure_xpath)
+        extracted_href = extract_xpath(parsed, feed.enclosure_xpath)
 
         if extracted_href:
 
