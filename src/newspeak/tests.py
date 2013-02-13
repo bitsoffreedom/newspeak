@@ -206,8 +206,18 @@ class BofFeedsTests(TestCase):
 
     def test_fetch(self):
         """
-        Update all BOF feeds and make some basic assertions about them.
+        Update some BOF feeds and make some basic assertions about them.
         """
+        # Make sure only 5 random feeds are fetched, as to
+        # limit the time tests take - the full feed list is about 91
+        Feed.objects.all().update(active=False)
+
+        all_feeds = Feed.objects.all()
+        for num in (1, 7, 24, 66, 89):
+            feed = all_feeds[num]
+            feed.active = True
+            feed.save()
+
         update_feeds()
 
         # Assert entries have been imported
