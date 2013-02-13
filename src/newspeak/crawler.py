@@ -201,15 +201,30 @@ def update_entry(feed, entry):
     # Feed content
     if 'content' in entry:
         for entry_content in entry.content:
-            # Even though standards require mimetype to be set,
-            # we are going to assume only value is set - the absolute minimum.
-            db_content = FeedContent(
-                entry=db_entry,
-                value=entry_content.value,
-                mime_type=entry_content.type or '',
-                language=entry_content.language or ''
-            )
-            db_content.save()
+            # Only add if content with the same mime type and
+            # language does not already exist. If it does, update if it differs.
+            try:
+                feed_content = FeedContent.objects.get(
+                    entry=db_entry,
+                    mime_type=entry_content.type or '',
+                    language=entry_content.language or ''
+                )
+
+                # Update existing content, if differs
+                if not feed_content.value == entry_content.value:
+                    feed_content.value = entry_content.value
+                    feed_content.save()
+
+            except FeedContent.DoesNotExist:
+                # Even though standards require mimetype to be set,
+                # we are going to assume only value is set - the absolute minimum.
+                db_content = FeedContent(
+                    entry=db_entry,
+                    value=entry_content.value,
+                    mime_type=entry_content.type or '',
+                    language=entry_content.language or ''
+                )
+                db_content.save()
 
         logger.debug(u'%d contents added to entry %s',
             len(entry.content), db_entry)
@@ -217,15 +232,25 @@ def update_entry(feed, entry):
     # Feed enclosures
     if 'enclosures' in entry:
         for entry_enclosure in entry.enclosures:
-            # Even though standards require length and mimetype to be set,
-            # we are going to assume only href is set - the absolute minimum.
-            db_enclosure = FeedEnclosure(
-                entry=db_entry,
-                href=entry_enclosure.href,
-                length=entry_enclosure.length or 0,
-                mime_type=entry_enclosure.type or ''
-            )
-            db_enclosure.save()
+            # Only add if an enclosure with the same URL does not
+            # already exist
+            if FeedEnclosure.objects.filter(
+                entry=db_entry, href=entry_enclosure.href).exists():
+                logger.debug(
+                    u'Enclosure with href \'%s\' already exists, not saving.',
+                    entry_enclosure.href
+                )
+
+            else:
+                # Even though standards require length and mimetype to be set,
+                # we are going to assume only href is set - the absolute minimum.
+                db_enclosure = FeedEnclosure(
+                    entry=db_entry,
+                    href=entry_enclosure.href,
+                    length=entry_enclosure.length or 0,
+                    mime_type=entry_enclosure.type or ''
+                )
+                db_enclosure.save()
 
         logger.debug(u'%d enclosures added to entry %s',
             len(entry.enclosures), db_entry)
@@ -239,7 +264,8 @@ def update_entry(feed, entry):
 
         # Only add if an enclosure with the same URL does not
         # already exist
-        if FeedEnclosure.objects.filter(href=extracted_href).exists():
+        if FeedEnclosure.objects.filter(
+            entry=db_entry, href=extracted_href).exists():
             logger.debug(
                 u'Extracted enclosure with href \'%s\' already exists, not saving.',
                 extracted_href
