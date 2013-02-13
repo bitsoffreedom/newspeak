@@ -7,7 +7,7 @@ from mock import Mock
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 
-from .models import Feed, FeedEntry, KeywordFilter
+from .models import Feed, FeedEntry, FeedEnclosure, FeedContent, KeywordFilter
 
 from .crawler import (
     update_feeds, filter_entry, keywords_to_regex, extract_xpath
@@ -81,6 +81,32 @@ class FetchTests(TestCase):
                 enclosure_found = True
 
         self.assertTrue(enclosure_found)
+
+    def test_nrc_noduplicate_contentenclosures(self):
+        """
+        Test whether there is no double extraction of content and/or
+        enclosures.
+        """
+        feed = Feed(url='http://www.nrc.nl/rss.php')
+        feed.save()
+
+        # Keep the count for comparison
+        enclosure_count = FeedEnclosure.objects.count()
+        content_count = FeedContent.objects.count()
+        self.assertTrue(enclosure_count)
+        self.assertTrue(content_count)
+
+        # Update the feed's data - make sure last modified and etag are disabled
+        feed.modified = ''
+        feed.etag = ''
+        feed.updated = None
+        feed.save()
+
+        update_feeds()
+
+        # Make sure there's still the same number of objects
+        self.assertEquals(enclosure_count, FeedEnclosure.objects.count())
+        self.assertEquals(content_count, FeedContent.objects.count())
 
     def test_nytimes(self):
         """ Test feed for NYTimes. """
@@ -430,6 +456,7 @@ class XPathExtractionTests(TestCase):
 
     def test_extract_pdf_bekendmakingen(self):
         """ Test extracting the PDF url from a government announcement. """
+
         url = 'https://zoek.officielebekendmakingen.nl/kst-24095-329.html'
         xpath = "string(id('downloadPdfHyperLink')/attribute::href)"
 
@@ -454,6 +481,7 @@ class XPathExtractionTests(TestCase):
 
     def test_extract_pdf_aivd(self):
         """ Test extracting the PDF url from an AIVD announcement. """
+
         url = 'https://www.aivd.nl/actueel/parlementaire/@2846/brief-minister-bzk-1/'
         xpath = "id('content')/div/ul/li[@class='download']/a/attribute::href"
 
@@ -474,7 +502,8 @@ class XPathExtractionTests(TestCase):
         self.assertEquals(info.gettype(), 'application/pdf')
 
     def test_extract_pdf_rijksoverheid(self):
-        """ Test extracting the PDF url from an Rijksoverheid announcement. """
+        """ Test extracting the PDF url from a Rijksoverheid announcement. """
+
         url = 'http://www.rijksoverheid.nl/documenten-en-publicaties/rapporten/2012/09/25/eindrapport-audit-ciot-2011.html'
         xpath = "id('content-column')/descendant::div[@class='download-chunk']/descendant::a/attribute::href"
 
@@ -496,6 +525,7 @@ class XPathExtractionTests(TestCase):
 
     def test_extract_content(self):
         """ Test extracting the contents from a government announcement. """
+
         url = 'https://zoek.officielebekendmakingen.nl/kst-26643-260.html'
         xpath = "id('main-column')"
 
@@ -529,7 +559,7 @@ class XPathExtractionTests(TestCase):
         """ Test extracting an actual enclosure using a Feed. """
 
         feed = Feed(
-            url='https://zoek.officielebekendmakingen.nl/rss/dossier/26643',
+            url='https://zoek.officielebekendmakingen.nl/rss/dossier/31981',
             enclosure_xpath=(
                 "string(id('downloadPdfHyperLink')/attribute::href)"
             ),
@@ -541,25 +571,55 @@ class XPathExtractionTests(TestCase):
         # Asssert some enclosures are present
         self.assertTrue(feed.entries.filter(enclosures__isnull=False).exists())
 
+    def test_extract_enclosure_no_duplicate(self):
+        """
+        Assert that updating a feed with an extracted enclosure does not
+        duplicate the enclosure.
+        """
+
+        feed = Feed(
+            url='https://zoek.officielebekendmakingen.nl/rss/dossier/31981',
+            enclosure_xpath=(
+                "string(id('downloadPdfHyperLink')/attribute::href)"
+            ),
+            enclosure_mime_type='application/pdf'
+        )
+
+        feed.save()
+
+        # Store the amount of enclosures
+        enclosure_count = FeedEnclosure.objects.count()
+        self.assertTrue(enclosure_count)
+
+        # Update the feed's data - make sure last modified and etag are disabled
+        feed.modified = ''
+        feed.etag = ''
+        feed.updated = None
+        feed.save()
+
+        update_feeds()
+
+        # Assurt the amount of enclosures is still the same
+        self.assertEquals(enclosure_count, FeedEnclosure.objects.count())
+
     def test_extract_summary_feed(self):
         """ Test extracting an actual enclosure using a Feed. """
 
         feed = Feed(
-            url='https://zoek.officielebekendmakingen.nl/rss/dossier/26643',
+            url='https://zoek.officielebekendmakingen.nl/rss/dossier/31981',
             summary_xpath="id('main-column')",
             summary_override=True
         )
 
         feed.save()
 
-        # Find the link from the previous test
+        # Find a link known to be in there
         entry = feed.entries.get(
-            link='https://zoek.officielebekendmakingen.nl/kst-26643-260.html'
+            link='https://zoek.officielebekendmakingen.nl/h-tk-20092010-21-1735.html'
         )
 
         # Assert presence of content in summary
         self.assertIn(
-            '<span class="functie">De minister van Binnenlandse Zaken en '
-            'Koninkrijksrelaties,</span>',
+            '<p>In stemming komt de motie-Ten Broeke/Dibi (31981, nr. 9).</p>',
             entry.summary
         )
