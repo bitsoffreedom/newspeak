@@ -77,11 +77,11 @@ Simply perform the following steps:
    `http://127.0.0.1:8000/all/atom/` in your favorite feed reader. All input
    feeds will be aggregated there.
 
-   Alternatively, the original feeds and keywords used by Bits of Freedom
-   are contained in a fixture called `feeds_keywords_bof.json`. This fixture
-   can be loaded using::
+   Alternatively, the original feeds, keywords and XPath expressions as used
+   by Bits of Freedom are contained in a fixture called `feeds_bof.json`. This
+   fixture can be loaded using::
 
-       newspeak loaddata feeds_keywords_bof
+       newspeak loaddata feeds_bof
 
 #. Setup a `Cronjob <http://en.wikipedia.org/wiki/Cronjob>`_ to automatically
    update the feed data using the `newspeak update_feeds` command. For
