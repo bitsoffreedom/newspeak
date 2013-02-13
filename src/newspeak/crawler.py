@@ -198,38 +198,26 @@ def update_entry(feed, entry):
     # (Required before being able to link stuff like content/enclosures)
     db_entry.save()
 
-    # Feed content
+    # Feed existing content
     if 'content' in entry:
         for entry_content in entry.content:
             # Only add if content with the same mime type and
             # language does not already exist. If it does, update if it differs.
-            try:
-                feed_content = FeedContent.objects.get(
-                    entry=db_entry,
-                    mime_type=entry_content.type or '',
-                    language=entry_content.language or ''
-                )
+            db_content = get_or_create_object(FeedContent,
+                entry=db_entry,
+                mime_type=entry_content.type or '',
+                language=entry_content.language or ''
+            )
 
-                # Update existing content, if differs
-                if not feed_content.value == entry_content.value:
-                    feed_content.value = entry_content.value
-                    feed_content.save()
-
-            except FeedContent.DoesNotExist:
-                # Even though standards require mimetype to be set,
-                # we are going to assume only value is set - the absolute minimum.
-                db_content = FeedContent(
-                    entry=db_entry,
-                    value=entry_content.value,
-                    mime_type=entry_content.type or '',
-                    language=entry_content.language or ''
-                )
+            # Update existing content, if differs
+            if db_content.value != entry_content.value:
+                db_content.value = entry_content.value
                 db_content.save()
 
         logger.debug(u'%d contents added to entry %s',
             len(entry.content), db_entry)
 
-    # Feed enclosures
+    # Copy existing feed enclosures
     if 'enclosures' in entry:
         for entry_enclosure in entry.enclosures:
             # Only add if an enclosure with the same URL does not
@@ -255,45 +243,81 @@ def update_entry(feed, entry):
         logger.debug(u'%d enclosures added to entry %s',
             len(entry.enclosures), db_entry)
 
+    # Extraction of content
+    if feed.content_xpath:
+        extracted_content = extract_xpath(entry.link, feed.content_xpath)
+
+        if extracted_content:
+
+            # Only add if content with the same mime type and
+            # language does not already exist. If it does, update if it differs.
+            db_content = get_or_create_object(FeedContent,
+                entry=db_entry,
+                mime_type=feed.content_mime_type,
+                language=feed.content_language
+            )
+
+            # Update existing content, if differs
+            if db_content.value != extracted_content:
+                db_content.value = extracted_content
+
+                try:
+                    db_content.full_clean()
+
+                except ValidationError:
+                    # Log the exception, don't save
+                    logger.exception(u'Error validating enclosure data.')
+
+                else:
+                    # All went fine, saving
+                    db_content.save()
+
+                    logger.debug(u'Saved extracted content %s for %s from %s',
+                        db_content, db_entry, entry.link
+                    )
+
     # Extraction of enclosures
     if feed.enclosure_xpath:
         extracted_href = extract_xpath(entry.link, feed.enclosure_xpath)
 
-        # Make the resulting URL absolute
-        extracted_href = urljoin(entry.link, extracted_href)
+        if extracted_href:
 
-        # Only add if an enclosure with the same URL does not
-        # already exist
-        if FeedEnclosure.objects.filter(
-            entry=db_entry, href=extracted_href).exists():
-            logger.debug(
-                u'Extracted enclosure with href \'%s\' already exists, not saving.',
-                extracted_href
-            )
+            # Make the resulting URL absolute
+            extracted_href = urljoin(entry.link, extracted_href)
 
-        else:
-            db_enclosure = FeedEnclosure(
-                entry=db_entry,
-                href=extracted_href,
-                length=0,
-                mime_type=feed.enclosure_mime_type
-            )
+            # Only add if an enclosure with the same URL does not
+            # already exist
+            if FeedEnclosure.objects.filter(
+                entry=db_entry, href=extracted_href).exists():
 
-            # Validate the results - the URL might be invalid
-            try:
-                db_enclosure.full_clean()
-
-            except ValidationError:
-                # Log the exception, don't save
-                logger.exception(u'Error validating enclosure data.')
+                logger.debug(
+                    u'Extracted enclosure with href \'%s\' already exists, not saving.',
+                    extracted_href
+                )
 
             else:
-                # All went fine, saving
-                db_enclosure.save()
-
-                logger.debug(u'Saved extracted enclosure %s for %s from %s',
-                    db_enclosure, db_entry, entry.link
+                db_enclosure = FeedEnclosure(
+                    entry=db_entry,
+                    href=extracted_href,
+                    length=0,
+                    mime_type=feed.enclosure_mime_type
                 )
+
+                # Validate the results - the URL might be invalid
+                try:
+                    db_enclosure.full_clean()
+
+                except ValidationError:
+                    # Log the exception, don't save
+                    logger.exception(u'Error validating enclosure data.')
+
+                else:
+                    # All went fine, saving
+                    db_enclosure.save()
+
+                    logger.debug(u'Saved extracted enclosure %s for %s from %s',
+                        db_enclosure, db_entry, entry.link
+                    )
 
 
 def update_feed(feed):

@@ -523,8 +523,8 @@ class XPathExtractionTests(TestCase):
         self.assertEquals(resource.getcode(), 200)
         self.assertEquals(info.gettype(), 'application/pdf')
 
-    def test_extract_content(self):
-        """ Test extracting the contents from a government announcement. """
+    def test_extract_summary(self):
+        """ Test extracting the contents as summary from a government announcement. """
 
         url = 'https://zoek.officielebekendmakingen.nl/kst-26643-260.html'
         xpath = "id('main-column')"
@@ -622,4 +622,31 @@ class XPathExtractionTests(TestCase):
         self.assertIn(
             '<p>In stemming komt de motie-Ten Broeke/Dibi (31981, nr. 9).</p>',
             entry.summary
+        )
+
+    def test_extract_content_feed(self):
+        """ Test extracting actual content from a Feed. """
+
+        feed = Feed(
+            url='https://zoek.officielebekendmakingen.nl/rss/dossier/31981',
+            content_xpath="id('main-column')",
+            content_mime_type='text/html'
+        )
+
+        feed.save()
+
+        # Asssert some content is present
+        self.assertTrue(feed.entries.filter(content__isnull=False).exists())
+
+        # Find a link known to be in there
+        entry = feed.entries.get(
+            link='https://zoek.officielebekendmakingen.nl/h-tk-20092010-21-1735.html'
+        )
+
+        content = entry.content.get()
+
+        # Assert presence of content in summary
+        self.assertIn(
+            '<p>In stemming komt de motie-Ten Broeke/Dibi (31981, nr. 9).</p>',
+            content.value
         )

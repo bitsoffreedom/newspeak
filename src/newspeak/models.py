@@ -4,6 +4,8 @@ logger = logging.getLogger(__name__)
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from django.conf.global_settings import LANGUAGES
+
 
 class KeywordFilter(models.Model):
     """ A keyword-based filter to be used when importing feeds. """
@@ -67,7 +69,33 @@ class SummaryXPathExtractionMixin(models.Model):
                     'extracted values.'), default=False)
 
 
-class Feed(EnclosureXPathExtractionMixin,
+class ContentXPathExtractionMixin(models.Model):
+    """
+    Model mixin for exdtraction of content from the link HTML using XPath.
+    """
+    class Meta:
+        abstract = True
+
+    content_xpath = models.CharField(_('content XPath'), blank=True,
+        help_text=_('XPath expression to find the extracted content. Leave '
+                    'blank to disable extraction.'), max_length=1024)
+
+    # Feeds only allow a small selection of content types
+    CONTENT_MIME_TYPE_CHOICES = (
+        ('text/plain', _('Text')),
+        ('text/html', _('HTML')),
+        ('application/xhtml+xml', _('XHTML'))
+    )
+    content_mime_type = models.CharField('content MIME type', blank=True,
+        help_text=_('MIME type to use for extracted content.'),
+        max_length=255, choices=CONTENT_MIME_TYPE_CHOICES)
+    content_language = models.CharField('content language', blank=True,
+        help_text=_('Language for the extracted content.'),
+        max_length=255, choices=LANGUAGES)
+
+
+class Feed(ContentXPathExtractionMixin,
+           EnclosureXPathExtractionMixin,
            SummaryXPathExtractionMixin,
            models.Model):
     """
@@ -209,7 +237,8 @@ class FeedContent(models.Model):
 
     value = models.TextField(_('value'))
     mime_type = models.CharField(_('MIME type'), max_length=255)
-    language = models.CharField(_('language'), max_length=16)
+    language = models.CharField(_('language'),
+        max_length=16, blank=True, choices=LANGUAGES)
 
     def __unicode__(self):
         """ Natural representation is mime_type. """
