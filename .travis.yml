@@ -6,7 +6,7 @@ python:
 
 env:
   - DJANGO=Django==1.4.3
-  # - DJANGO=https://www.djangoproject.com/download/1.5c1/tarball/
+  - DJANGO=https://www.djangoproject.com/download/1.5c1/tarball/
 
 # command to install dependencies, initialize database
 install:
@@ -14,7 +14,6 @@ install:
   - pip install -r requirements.txt --use-mirrors
   - python setup.py install
   - newspeak init
-  - newspeak syncdb --migrate --noinput
 
 # command to run tests
 script: newspeak test -v 2 newspeak
