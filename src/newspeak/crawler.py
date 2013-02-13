@@ -176,7 +176,11 @@ def update_entry(feed, entry):
     db_entry.author = getattr(db_entry, 'author', None)
 
     db_entry.published = datetime_from_struct(entry.published_parsed)
-    db_entry.updated = datetime_from_struct(entry.updated_parsed)
+
+    # Only set updated when available - do not assume it to be there
+    raw_updated_parsed = getattr(entry, 'updated_parsed', None)
+    if raw_updated_parsed:
+        db_entry.updated = datetime_from_struct(raw_updated_parsed)
 
     # Extraction of summary
     if feed.summary_xpath and (not db_entry.summary or feed.summary_override):
