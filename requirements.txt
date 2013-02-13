@@ -8,3 +8,4 @@ pytz
 eventlet
 mock
 lxml
+coverage

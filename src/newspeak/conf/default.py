@@ -75,9 +75,19 @@ INSTALLED_APPS = (
 
     'gunicorn',
     'south',
+    'django_nose',
 
     'newspeak'
 )
+
+# Use nose to run all tests
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
+# Tell nose to measure coverage on 'newspeak'
+NOSE_ARGS = [
+    '--with-coverage',
+    '--cover-package=newspeak',
+]
 
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
 STATIC_URL = '/_static/'
