@@ -16,4 +16,4 @@ install:
   - newspeak init
 
 # command to run tests
-script: newspeak test -v 2 newspeak
+script: newspeak test --logging-level=INFO

@@ -87,6 +87,7 @@ TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 NOSE_ARGS = [
     '--with-coverage',
     '--cover-package=newspeak',
+    '--failure-detail',
 ]
 
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
