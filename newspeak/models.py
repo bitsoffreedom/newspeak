@@ -36,68 +36,7 @@ class KeywordFilter(models.Model):
         return self.name
 
 
-# To make it easier to possibly disable the following specific features -
-# and to make their functionality clearly seperated from the Feed
-# aggregation functionality, they are implemented as seperate Mixin classes.
-class EnclosureXPathExtractionMixin(models.Model):
-    """
-    Model mixin for extraction of enclosures from the link HTML using XPath.
-    """
-    class Meta:
-        abstract = True
-
-    enclosure_xpath = models.CharField(_('enclosure XPath'), blank=True,
-        help_text=_('XPath expression to find the enclosure href. Leave '
-                    'blank to disable extraction.'), max_length=1024)
-    enclosure_mime_type = models.CharField('enclosure MIME type', blank=True,
-        help_text=_('MIME type to use for extracted enclosures.'),
-        max_length=255)
-
-
-class SummaryXPathExtractionMixin(models.Model):
-    """
-    Model mixin for exdtraction of summary from the link HTML using XPath.
-    """
-    class Meta:
-        abstract = True
-
-    summary_xpath = models.CharField(_('summary XPath'), blank=True,
-        help_text=_('XPath expression to find the summary content. Leave '
-                    'blank to disable extraction.'), max_length=1024)
-    summary_override = models.BooleanField(_('override summary'),
-        help_text=_('Whether or not to override existing summaries with '
-                    'extracted values.'), default=False)
-
-
-class ContentXPathExtractionMixin(models.Model):
-    """
-    Model mixin for exdtraction of content from the link HTML using XPath.
-    """
-    class Meta:
-        abstract = True
-
-    content_xpath = models.CharField(_('content XPath'), blank=True,
-        help_text=_('XPath expression to find the extracted content. Leave '
-                    'blank to disable extraction.'), max_length=1024)
-
-    # Feeds only allow a small selection of content types
-    CONTENT_MIME_TYPE_CHOICES = (
-        ('text/plain', _('Text')),
-        ('text/html', _('HTML')),
-        ('application/xhtml+xml', _('XHTML'))
-    )
-    content_mime_type = models.CharField('content MIME type', blank=True,
-        help_text=_('MIME type to use for extracted content.'),
-        max_length=255, choices=CONTENT_MIME_TYPE_CHOICES)
-    content_language = models.CharField('content language', blank=True,
-        help_text=_('Language for the extracted content.'),
-        max_length=255, choices=LANGUAGES)
-
-
-class Feed(ContentXPathExtractionMixin,
-           EnclosureXPathExtractionMixin,
-           SummaryXPathExtractionMixin,
-           models.Model):
+class Feed(models.Model):
     """
     A Feed represents an Atom or RSS feed resource to be aggregated.
     """
@@ -121,7 +60,7 @@ class Feed(ContentXPathExtractionMixin,
     active = models.BooleanField(_('active'), default=True, db_index=True)
     filters = models.ManyToManyField(KeywordFilter, null=True, blank=True)
 
-    # Preserve some error data
+    """ Preserve error state. """
     error_state = models.BooleanField(
         _('error'), help_text=_('Latest crawl yielded error.'),
         default=False, db_index=True, editable=False)
@@ -130,11 +69,45 @@ class Feed(ContentXPathExtractionMixin,
     error_date = models.DateTimeField(_('error date'), null=True,
         help_text=_('Latest time when an error was seen.'), editable=False)
 
-    # HTTP dynamic get optimizations
+    """ HTTP 1.1 get optimizations """
     modified = models.CharField(_('HTTP Last Modified header'),
         max_length=255, editable=False)
     etag = models.CharField(_('HTTP Etag'),
         max_length=255, editable=False)
+
+    """ XPath summary extraction. """
+    summary_xpath = models.CharField(_('summary XPath'), blank=True,
+        help_text=_('XPath expression to find the summary content. Leave '
+                    'blank to disable extraction.'), max_length=1024)
+    summary_override = models.BooleanField(_('override summary'),
+        help_text=_('Whether or not to override existing summaries with '
+                    'extracted values.'), default=False)
+
+    """ XPath content extraction. """
+    content_xpath = models.CharField(_('content XPath'), blank=True,
+        help_text=_('XPath expression to find the extracted content. Leave '
+                    'blank to disable extraction.'), max_length=1024)
+
+    # Feeds only allow a small selection of content types
+    CONTENT_MIME_TYPE_CHOICES = (
+        ('text/plain', _('Text')),
+        ('text/html', _('HTML')),
+        ('application/xhtml+xml', _('XHTML'))
+    )
+    content_mime_type = models.CharField('content MIME type', blank=True,
+        help_text=_('MIME type to use for extracted content.'),
+        max_length=255, choices=CONTENT_MIME_TYPE_CHOICES)
+    content_language = models.CharField('content language', blank=True,
+        help_text=_('Language for the extracted content.'),
+        max_length=255, choices=LANGUAGES)
+
+    """ XPath enclosure extraction. """
+    enclosure_xpath = models.CharField(_('enclosure XPath'), blank=True,
+        help_text=_('XPath expression to find the enclosure href. Leave '
+                    'blank to disable extraction.'), max_length=1024)
+    enclosure_mime_type = models.CharField('enclosure MIME type', blank=True,
+        help_text=_('MIME type to use for extracted enclosures.'),
+        max_length=255)
 
     def save(self, *args, **kwargs):
         """ Make sure we fetch on first save action. """
