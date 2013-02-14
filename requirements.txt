@@ -9,3 +9,4 @@ eventlet
 mock
 lxml
 coverage
+django-nose
