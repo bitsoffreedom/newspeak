@@ -186,7 +186,7 @@ class FeedEnclosure(models.Model):
 
     entry = models.ForeignKey(FeedEntry, related_name='enclosures')
 
-    href = models.URLField(_('href'), max_length=330)
+    href = models.URLField(_('href'), max_length=512)
     length = models.PositiveIntegerField(_('length'))
     mime_type = models.CharField(_('MIME type'), max_length=255)
 
