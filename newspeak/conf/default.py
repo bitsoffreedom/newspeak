@@ -90,6 +90,9 @@ NOSE_ARGS = [
     '--failure-detail',
 ]
 
+# Disable migrations during testing, suppresses a lot of debugging nonesense
+SOUTH_TESTS_MIGRATE = False
+
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
 STATIC_URL = '/_static/'
 
