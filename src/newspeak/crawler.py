@@ -159,9 +159,8 @@ def update_entry(feed, entry):
     db_entry.published = datetime_from_struct(entry.published_parsed)
 
     # Only set updated when available - do not assume it to be there
-    raw_updated_parsed = getattr(entry, 'updated_parsed', None)
-    if raw_updated_parsed:
-        db_entry.updated = datetime_from_struct(raw_updated_parsed)
+    if 'updated_parsed' in entry:
+        db_entry.updated = datetime_from_struct(entry.updated_parsed)
 
     # Determine whether to perform extraction and if so: only perform it once
     if feed.summary_xpath or feed.enclosure_xpath or feed.content_xpath:
