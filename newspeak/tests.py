@@ -4,6 +4,8 @@ from urlparse import urljoin
 
 from mock import Mock
 
+from lxml import html
+
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 
@@ -13,7 +15,7 @@ from .crawler import (
     update_feeds, filter_entry, keywords_to_regex, extract_xpath
 )
 
-from .utils import parse_url
+from .utils import fetch_url, parse_url
 
 
 class FetchTests(TestCase):
@@ -655,3 +657,42 @@ class XPathExtractionTests(TestCase):
             '<p>In stemming komt de motie-Ten Broeke/Dibi (31981, nr. 9).</p>',
             content.value
         )
+
+
+class UtilTests(TestCase):
+    """ Test utility functions. """
+
+    def test_fetch_url(self):
+        """ Test fetching a URL. """
+        # This should return a 200
+        result = fetch_url(
+            'https://zoek.officielebekendmakingen.nl/rss/dossier/31981'
+        )
+
+        self.assertTrue(result)
+
+        # This should yield a timeout - and thus empty data
+        result = fetch_url(
+            'http://10.255.255.1/'
+        )
+
+        self.assertFalse(result)
+
+    def test_parse_url(self):
+        """ Test parsing URL's. """
+
+        # This should return a 200
+        result = parse_url(
+            'https://zoek.officielebekendmakingen.nl/dossier/31981'
+        )
+
+        self.assertTrue(isinstance(result, html.HtmlMixin))
+        self.assertTrue(result.body.text)
+
+
+        # This should yield a timeout - and thus empty data
+        result = fetch_url(
+            'http://10.255.255.1/'
+        )
+
+        self.assertFalse(isinstance(result, html.HtmlMixin))
