@@ -236,12 +236,13 @@ class BofFeedsTests(TestCase):
         """
         Update some BOF feeds and make some basic assertions about them.
         """
-        # Make sure only 2 randomly selected feeds are fetched, as to
+        # Make sure only 2 feeds are fetched, as to
         # limit the time tests take - the full feed list is about 91
         Feed.objects.all().update(active=False)
 
         all_feeds = Feed.objects.all()
-        for feed in all_feeds.order_by('?')[:2]:
+        for num in (1, 9):
+            feed = all_feeds[num]
             feed.active = True
             feed.save()
 
