@@ -108,8 +108,8 @@ class Feed(ContentXPathExtractionMixin,
 
     title = models.CharField(_('title'), max_length=1024, blank=True)
     subtitle = models.CharField(_('subtitle'), max_length=1024, blank=True)
-    link = models.URLField(_('link'), blank=True)
-    url = models.URLField(_('URL'))
+    link = models.URLField(_('link'), max_length=330, blank=True)
+    url = models.URLField(_('URL'), max_length=330)
 
     # feed_id = models.CharField(_('remote feed id'),
     #     unique=True, editable=False, max_length=255)
@@ -213,7 +213,7 @@ class FeedEnclosure(models.Model):
 
     entry = models.ForeignKey(FeedEntry, related_name='enclosures')
 
-    href = models.URLField(_('href'), max_length=255)
+    href = models.URLField(_('href'), max_length=330)
     length = models.PositiveIntegerField(_('length'))
     mime_type = models.CharField(_('MIME type'), max_length=255)
 
