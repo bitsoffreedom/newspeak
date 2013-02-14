@@ -1,5 +1,5 @@
 include setup.py README.rst MANIFEST.in LICENSE AUTHORS
-recursive-include src/newspeak/fixtures *
-recursive-include src/newspeak/templates *
-recursive-include src/newspeak/locale *
-recursive-include src/newspeak/static *
+recursive-include newspeak/fixtures *
+recursive-include newspeak/templates *
+recursive-include newspeak/locale *
+recursive-include newspeak/static *

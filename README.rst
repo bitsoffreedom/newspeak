@@ -13,9 +13,9 @@ Architecture
 ------------
 Newspeak performs the following tasks (in order):
 
-#. Fetch specified RSS/Atom feeds as per the `Feed <https://github.com/bitsoffreedom/newspeak/blob/standalone/src/newspeak/models.py#L70>`_ model (in parallel).
+#. Fetch specified RSS/Atom feeds as per the `Feed <https://github.com/bitsoffreedom/newspeak/blob/standalone/newspeak/models.py#L70>`_ model (in parallel).
 #. Parses the feeds using `feedparser <http://pypi.python.org/pypi/feedparser>`_.
-#. (Optionally) applies per-feed inclusive/exclusive keyword filters on the title and/or summary, based on the `KeywordFilter <https://github.com/bitsoffreedom/newspeak/blob/standalone/src/newspeak/models.py#L8>`_ model.
+#. (Optionally) applies per-feed inclusive/exclusive keyword filters on the title and/or summary, based on the `KeywordFilter <https://github.com/bitsoffreedom/newspeak/blob/standalone/newspeak/models.py#L8>`_ model.
 #. (Optionally) extract summary data using an XPath expression from feed entry's link URL, using `lxml <http://lxml.de/>`_.
 #. (Optionally) extract enclosure information using XPath expressions from the feed entry's link URL, using `lxml <http://lxml.de/>`_.
 #. Store the resulting feed information locally in a database.
