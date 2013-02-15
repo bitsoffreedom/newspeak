@@ -13,6 +13,8 @@ from eventlet.green import urllib2
 from django.utils import timezone
 from django.utils.functional import memoize
 
+from django.db import models
+
 
 def datetime_from_struct(time):
     """
@@ -28,7 +30,15 @@ def datetime_from_struct(time):
 
 
 def get_or_create_object(model, **kwargs):
-    """ Get or create feed entry with specified kwargs without saving. """
+    """
+    Get or create feed entry with specified kwargs without saving.
+
+    This behaves like Django's own get_or_create but it doesn't save the
+    newly created object, allowing for further modification before saving
+    without triggering an extra `save()` call.
+
+    Source: https://github.com/visualspace/django-vspace-utils/blob/master/vspace_utils/utils.py
+    """
 
     try:
         # Updating an existing object
@@ -43,6 +53,28 @@ def get_or_create_object(model, **kwargs):
         logger.debug('Creating new entry %s', db_entry)
 
     return db_entry
+
+
+def get_next_ordering(model, field_name='sort_order', increment=10):
+    """
+    Get the next available value for the sortorder for a model.
+
+    Use case::
+
+        class MyModel(models.Model):
+            sort_order = models.PositiveSmallIntegerField(
+                default=lambda: get_next_ordering(MyModel)
+            )
+
+    Source: https://github.com/visualspace/django-vspace-utils/blob/master/vspace_utils/utils.py
+    """
+    aggregate = model.objects.aggregate(latest=models.Max(field_name))
+    latest = aggregate['latest']
+
+    if latest:
+        return latest + increment
+    else:
+        return increment
 
 
 def keywords_to_regex(keywords):

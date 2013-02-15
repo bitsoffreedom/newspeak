@@ -6,6 +6,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from django.conf.global_settings import LANGUAGES
 
+from .utils import get_next_ordering
+
 
 class KeywordFilter(models.Model):
     """ A keyword-based filter to be used when importing feeds. """
@@ -13,9 +15,17 @@ class KeywordFilter(models.Model):
     class Meta:
         verbose_name = _('keyword filter')
         verbose_name_plural = _('keyword filters')
+        ordering = ('sort_order', )
 
     name = models.CharField(_('name'), max_length=255)
     active = models.BooleanField(_('active'), default=True, db_index=True)
+    sort_order = models.PositiveSmallIntegerField(_('sort order'),
+        unique=True, default=lambda: get_next_ordering(KeywordFilter),
+        help_text=_(
+            'Order in which this filter is applied, relative to other '
+            'selected filters for a particular feed.'
+        )
+    )
 
     keywords = models.TextField(_('keywords'),
         help_text=_(
