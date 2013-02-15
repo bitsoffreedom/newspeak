@@ -36,11 +36,17 @@ class KeywordFilter(models.Model):
     )
 
     # Filter specs
-    filter_inclusive = models.BooleanField(_('filter inclusive'),
-        help_text=_('Whether to perform inclusive or exclusive filtering.'),
-        default=True)
-    filter_title = models.BooleanField(_('filter title'), default=True)
-    filter_summary = models.BooleanField(_('filter summary'), default=True)
+    filter_inclusive = models.BooleanField(_('filter inclusive'), default=True,
+        help_text=_(
+            'Inclusive filtering will only let matching entries through while '
+            'exclusive filtering will exactly the opposite; it filters '
+            'matching entries, leaving only the unmatched entries.'
+        )
+    )
+    filter_title = models.BooleanField(_('filter title'), default=True,
+        help_text=_('Whether to apply this filter on the title of the entry.'))
+    filter_summary = models.BooleanField(_('filter summary'), default=True,
+        help_text=_('Whether to apply this filter on the summary of the entry.'))
 
     def __unicode__(self):
         return self.name
