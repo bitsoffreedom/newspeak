@@ -1,3 +1,0 @@
-Cheetah
-feedparser
-mysql-python
