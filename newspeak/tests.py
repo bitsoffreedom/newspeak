@@ -9,6 +9,8 @@ from lxml import html
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 
+from django.conf import settings
+
 from .models import Feed, FeedEntry, FeedEnclosure, FeedContent, KeywordFilter
 
 from .crawler import (
@@ -299,9 +301,12 @@ class RegexFilterTests(TestCase):
 
         self.assertTrue(keywords_to_regex('kamervragen').search(self.text_2))
 
-        # Matches should be case sensitive
-        self.assertTrue(keywords_to_regex('Reactie').search(self.text_1))
-        self.assertFalse(keywords_to_regex('reactie').search(self.text_1))
+        # Matches should be case sensitive, if requested
+        # We check in the tests whether case sensitivity is enabled,
+        # as overriding the settings is broken.
+        if settings.NEWSPEAK_CASE_SENSITIVE:
+            self.assertTrue(keywords_to_regex('Reactie').search(self.text_1))
+            self.assertFalse(keywords_to_regex('reactie').search(self.text_1))
 
         # Make sure punctuation marks are not counted
         self.assertTrue(keywords_to_regex('afgeluisterd').search(self.text_3))

@@ -13,6 +13,8 @@ from eventlet.green import urllib2
 from django.utils import timezone
 from django.utils.functional import memoize
 
+from django.conf import settings
+
 from django.db import models
 
 
@@ -95,7 +97,13 @@ def keywords_to_regex(keywords):
 
     logger.debug('Compiling regular expression: %s', regex)
 
-    return re.compile(regex, flags=re.IGNORECASE)
+    # Conditionally compile case (in)sensitive
+    if settings.NEWSPEAK_CASE_SENSITIVE:
+        compiled_regex = re.compile(regex)
+    else:
+        compiled_regex = re.compile(regex, flags=re.IGNORECASE)
+
+    return compiled_regex
 
 # Cache the compiled regular expressions - never compile the same twice
 _regex_cache = {}

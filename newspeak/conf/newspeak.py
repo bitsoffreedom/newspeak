@@ -12,3 +12,5 @@ NEWSPEAK_METADATA = {
     'author_email': 'author@email.com',
     'author_link': 'http://www.authorsite.com/'
 }
+
+NEWSPEAK_CASE_SENSITIVE = False
