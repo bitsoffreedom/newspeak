@@ -191,4 +191,3 @@ class NewspeakAtomFeed(NewspeakRSSFeed):
 
     feed_type = ExtendedAtomFeed
     subtitle = NewspeakRSSFeed.description
-
