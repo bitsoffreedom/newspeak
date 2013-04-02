@@ -95,7 +95,7 @@ def keywords_to_regex(keywords):
 
     logger.debug('Compiling regular expression: %s', regex)
 
-    return re.compile(regex)
+    return re.compile(regex, flags=re.IGNORECASE)
 
 # Cache the compiled regular expressions - never compile the same twice
 _regex_cache = {}
