@@ -1,7 +1,7 @@
 newspeak: Standalone Django based feed aggregator
 ==================================================
 
-.. image:: https://secure.travis-ci.org/bitsoffreedom/newspeak.png?branch=standalone
+.. image:: https://secure.travis-ci.org/bitsoffreedom/newspeak.png?branch=master
     :target: http://travis-ci.org/bitsoffreedom/newspeak
 
 What it does
@@ -13,9 +13,9 @@ Architecture
 ------------
 Newspeak performs the following tasks (in order):
 
-#. Fetch specified RSS/Atom feeds as per the `Feed <https://github.com/bitsoffreedom/newspeak/blob/standalone/newspeak/models.py#L70>`_ model (in parallel).
+#. Fetch specified RSS/Atom feeds as per the `Feed <https://github.com/bitsoffreedom/newspeak/blob/master/newspeak/models.py#L70>`_ model (in parallel).
 #. Parses the feeds using `feedparser <http://pypi.python.org/pypi/feedparser>`_.
-#. (Optionally) applies per-feed inclusive/exclusive keyword filters on the title and/or summary, based on the `KeywordFilter <https://github.com/bitsoffreedom/newspeak/blob/standalone/newspeak/models.py#L8>`_ model.
+#. (Optionally) applies per-feed inclusive/exclusive keyword filters on the title and/or summary, based on the `KeywordFilter <https://github.com/bitsoffreedom/newspeak/blob/master/newspeak/models.py#L8>`_ model.
 #. (Optionally) extract summary data using an XPath expression from feed entry's link URL, using `lxml <http://lxml.de/>`_.
 #. (Optionally) extract enclosure information using XPath expressions from the feed entry's link URL, using `lxml <http://lxml.de/>`_.
 #. Store the resulting feed information locally in a database.
@@ -36,7 +36,7 @@ Simply perform the following steps:
 #. Install such that you can easily code along::
 
        pip install -e \
-         git+https://github.com/bitsoffreedom/newspeak.git@standalone#egg=newspeak
+         git+https://github.com/bitsoffreedom/newspeak.git#egg=newspeak
 
    If you're smart and like to keep your Python environment clean, do this
    in a `VirtualEnv <http://pypi.python.org/pypi/virtualenv/>`_.
@@ -106,7 +106,7 @@ Upgrading
 #. Run the PIP installation command again::
 
        pip install -e \
-         git+https://github.com/bitsoffreedom/newspeak.git@standalone#egg=newspeak
+         git+https://github.com/bitsoffreedom/newspeak.git#egg=newspeak
 
 #. (Optionally) Run the tests::
 
