@@ -57,3 +57,6 @@ DATABASES = {
 #     'author_link':
 #         'https://rejo.zenger.nl/inzicht/newspeak-van-de-nederlandse-overheid/'
 # }
+#
+# Perform case sensitive matching on keywords
+# NEWSPEAK_CASE_SENSITIVE = True
