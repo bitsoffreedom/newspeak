@@ -57,6 +57,10 @@ Simply perform the following steps:
    For a more thorough description and an example of these settings, please
    have a look at the initial settings file generated in the previous step.
 
+   By default, gunicorn is configured to only accept requests for
+   `127.0.0.1` and `localhost`. If you want newspeak to be available on other
+   hostnames, be sure to add these to the list of `ALLOWED_HOSTS` setting.
+
 #. (Optionally) Run the tests::
 
        newspeak test newspeak

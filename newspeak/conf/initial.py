@@ -25,6 +25,9 @@ DATABASES = {
     }
 }
 
+# List of hostnames you want this configuration to be accesible as
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+
 # Override the time zone and the language code
 
 # TIME_ZONE = 'UTC'
