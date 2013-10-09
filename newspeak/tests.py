@@ -490,9 +490,12 @@ class XPathExtractionTests(TestCase):
         )
 
         parsed = parse_url(url)
+        self.assertTrue(parsed)
+
         result = extract_xpath(parsed, xpath)
 
         # Assert the value makes sense
+        self.assertTrue(result)
         self.assertEquals(result, result_url)
 
         # Now make sure the returned URL is available
@@ -510,10 +513,7 @@ class XPathExtractionTests(TestCase):
             'http://www.rijksoverheid.nl/documenten-en-publicaties/rapporten/'
             '2012/09/25/eindrapport-audit-ciot-2011.html'
         )
-        xpath = (
-            "id('content-column')/descendant::div[@class='download-chunk']/"
-            "descendant::a/attribute::href"
-        )
+        xpath = "id('content')//a[@class='download-chunk pdf']/@href"
 
         result_url = (
             'http://www.rijksoverheid.nl/bestanden/documenten-en-publicaties/'
@@ -521,9 +521,12 @@ class XPathExtractionTests(TestCase):
         )
 
         parsed = parse_url(url)
+        self.assertTrue(parsed)
+
         result = extract_xpath(parsed, xpath)
 
         # Assert the value makes sense
+        self.assertTrue(result)
         self.assertEquals(result, result_url)
 
         # Now make sure the returned URL is available
